@@ -1,6 +1,6 @@
 /* Service worker de Reacciona: deja la app disponible sin internet.
    Cambia VERSION cada vez que subas cambios, para que los dispositivos se actualicen. */
-var VERSION = "reacciona-v4";
+var VERSION = "reacciona-v5";
 var ARCHIVOS = [
   "./", "index.html", "manifest.webmanifest",
   "css/app.css", "css/juegos.css",

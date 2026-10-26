@@ -186,10 +186,10 @@
       if (!splash) return;
       splash.classList.add("fuera");
       var s = splash; splash = null;
-      setTimeout(function () { if (s.parentNode) s.parentNode.removeChild(s); }, 500);
+      setTimeout(function () { if (s.parentNode) s.parentNode.removeChild(s); }, 350);
     }
     splash.addEventListener("click", quitar);
-    setTimeout(quitar, 2400);
+    setTimeout(quitar, 2200);
 
     if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) {
       window.addEventListener("load", function () {
