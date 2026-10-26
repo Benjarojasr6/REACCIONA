@@ -8,14 +8,14 @@
     { id: "meta", nombre: "Meta en tiempo", desc: "Logra una cantidad de toques antes de que pasen los segundos." },
     { id: "carrera", nombre: "Carrera", desc: "Completa una cantidad de toques lo más rápido que puedas." },
     { id: "infinito", nombre: "Infinito", desc: "Sin tiempo y cada vez más difícil: las luces duran menos, salen varias a la vez y más adelante aparecen luces rojas que no se deben tocar. Pierdes una vida si tocas un círculo apagado o una roja, o si dejas escapar una luz azul." },
-    { id: "azules", nombre: "Solo azules", desc: "Toca solo las luces azules. Las rojas no se tocan: cada roja que toques resta un punto." },
+    { id: "azules", nombre: "Solo azules", desc: "Toca solo las luces azules. Las rojas no se tocan (cada roja que toques resta un punto): esperas a que se apaguen o, si lo eliges, las apagas tocando un círculo vacío." },
     { id: "secuencia", nombre: "Secuencia", desc: "Mira la secuencia de luces y repítela. Cada ronda suma un paso y va más rápido. Si te equivocas pierdes una vida." }
   ];
   var PRESETS = [["Fácil", 3, 4], ["Medio", 4, 5], ["Difícil", 5, 6], ["Experto", 6, 8]];
   var DURACIONES = [[0, "Hasta tocarla"], [3000, "3 s"], [2000, "2 s"], [1000, "1 s"], [700, "0,7 s"]];
   var DEF = {
     modo: "tiempo", cols: 4, filas: 5, simult: 1, duracion: 0, seg: 30, toques: 20, segMeta: 30,
-    vidas: 3, rojas: 30, velocidad: 700
+    vidas: 3, rojas: 30, velocidad: 700, rojaMs: 1500, rojaVacio: false
   };
 
   function nombreModo(id) { return MODOS.filter(function (m) { return m.id === id; })[0].nombre; }
@@ -34,6 +34,16 @@
       [1, 3].map(function (n) {
         return '<button type="button" class="chip' + (v === n ? " sel" : "") + '" data-vidas="' + n + '">' + n + (n === 1 ? " vida" : " vidas") + "</button>";
       }).join("") + "</div>";
+  }
+
+  function ajustesRoja(cfg) {
+    return campo("rojaMs", "Duración de la luz roja", 500, 3000, 100, cfg.rojaMs, " ms") +
+      '<p class="campo-et sola">Cuando sale una roja</p><div class="chips">' +
+      '<button type="button" class="chip' + (!cfg.rojaVacio ? " sel" : "") + '" data-rv="0">Esperar a que se apague</button>' +
+      '<button type="button" class="chip' + (cfg.rojaVacio ? " sel" : "") + '" data-rv="1">Tocar un círculo vacío</button></div>' +
+      '<p class="nota">' + (cfg.rojaVacio
+        ? "Al salir una roja, tócala apagándola con cualquier círculo vacío. No cuesta vida ni punto, y así no esperas a que se apague sola."
+        : "La roja no se toca: se espera a que se apague sola.") + "</p>";
   }
 
   R.registrar({
@@ -59,8 +69,8 @@
           case "tiempo": return g + " · " + luces + " · " + durTxt(cfg.duracion) + " · " + cfg.seg + " s";
           case "meta": return g + " · " + luces + " · " + durTxt(cfg.duracion) + " · " + cfg.toques + " toques en " + cfg.segMeta + " s";
           case "carrera": return g + " · " + luces + " · " + durTxt(cfg.duracion) + " · " + cfg.toques + " toques";
-          case "infinito": return g + " · " + cfg.vidas + (cfg.vidas === 1 ? " vida" : " vidas");
-          case "azules": return g + " · " + luces + " · " + durTxt(cfg.duracion) + " · " + cfg.seg + " s · " + cfg.rojas + " % rojas";
+          case "infinito": return g + " · " + cfg.vidas + (cfg.vidas === 1 ? " vida" : " vidas") + " · roja " + R.num(cfg.rojaMs / 1000, 1) + " s" + (cfg.rojaVacio ? " · roja: círculo vacío" : "");
+          case "azules": return g + " · " + luces + " · " + durTxt(cfg.duracion) + " · " + cfg.seg + " s · " + cfg.rojas + " % rojas · roja " + R.num(cfg.rojaMs / 1000, 1) + " s" + (cfg.rojaVacio ? " · roja: círculo vacío" : "");
           default: return g + " · " + cfg.vidas + (cfg.vidas === 1 ? " vida" : " vidas") + " · " + cfg.velocidad + " ms por paso";
         }
       }
@@ -80,8 +90,8 @@
         if (cfg.modo === "tiempo") params = campo("seg", "Duración", 5, 120, 5, cfg.seg, " s");
         else if (cfg.modo === "meta") params = campo("toques", "Toques a lograr", 5, 100, 5, cfg.toques, "") + campo("segMeta", "En", 5, 120, 5, cfg.segMeta, " s");
         else if (cfg.modo === "carrera") params = campo("toques", "Toques a lograr", 5, 100, 5, cfg.toques, "");
-        else if (cfg.modo === "infinito") params = chipsVidas(cfg.vidas);
-        else if (cfg.modo === "azules") params = campo("seg", "Duración", 5, 120, 5, cfg.seg, " s") + campo("rojas", "Luces rojas", 10, 60, 5, cfg.rojas, " %");
+        else if (cfg.modo === "infinito") params = chipsVidas(cfg.vidas) + ajustesRoja(cfg);
+        else if (cfg.modo === "azules") params = campo("seg", "Duración", 5, 120, 5, cfg.seg, " s") + campo("rojas", "Luces rojas", 10, 60, 5, cfg.rojas, " %") + ajustesRoja(cfg);
         else params = campo("velocidad", "Velocidad inicial (tiempo por paso)", 300, 1200, 50, cfg.velocidad, " ms") + chipsVidas(cfg.vidas);
 
         if (cfg.modo !== "infinito" && cfg.modo !== "secuencia") {
@@ -134,6 +144,7 @@
           else if (b.dataset.modo) { cfg.modo = b.dataset.modo; guardarCfg(); pantallaConfig(); }
           else if (b.dataset.pre) { var p = b.dataset.pre.split("x"); cfg.cols = +p[0]; cfg.filas = +p[1]; guardarCfg(); pantallaConfig(); }
           else if (b.dataset.dur !== undefined) { cfg.duracion = +b.dataset.dur; guardarCfg(); pantallaConfig(); }
+          else if (b.dataset.rv !== undefined) { cfg.rojaVacio = b.dataset.rv === "1"; guardarCfg(); pantallaConfig(); }
           else if (b.dataset.vidas) { cfg.vidas = +b.dataset.vidas; guardarCfg(); pantallaConfig(); }
         });
         raiz.addEventListener("input", function (e) {
@@ -266,7 +277,9 @@
         var simultBase = Math.max(1, Math.min(cfg.simult, Math.floor(n / 2)));
         var vidasTotal = infinito ? cfg.vidas : 0, vidasRest = vidasTotal;
         var lit = {}, ult = -1, t0 = 0;
-        var est = { hits: 0, fuera: 0, perdidas: 0, rojas: 0, rts: [], tUltimo: 0 };
+        var est = { hits: 0, fuera: 0, perdidas: 0, rojas: 0, esquivadas: 0, rts: [], tUltimo: 0 };
+        var rojaVacio = cfg.rojaVacio && (infinito || azules);
+        if (rojaVacio) P.msg.classList.add("fijo");
 
         function nivel() { return infinito ? Math.floor(est.hits / 5) : 0; }
         function simultAhora() {
@@ -314,7 +327,7 @@
 
         function encenderUno(i) {
           var el = celdas[i], rojo = Math.random() < probRojo();
-          var d = durAhora(), dd = rojo ? (d || 1500) : d;
+          var d = durAhora(), dd = rojo ? cfg.rojaMs : d;
           el.classList.remove("hit", "err", "miss");
           el.classList.add("on");
           if (rojo) el.classList.add("rojo");
@@ -329,11 +342,18 @@
             var k = Math.floor(Math.random() * libres.length);
             encenderUno(libres.splice(k, 1)[0]);
           }
+          aviso();
+        }
+        function aviso() {
+          if (!rojaVacio) return;
+          var hay = Object.keys(lit).some(function (k) { return lit[k].rojo; });
+          P.msg.textContent = hay ? "Roja: toca un círculo vacío" : "";
         }
         function apagar(i) {
           if (lit[i]) clearTimeout(lit[i].timer);
           delete lit[i];
           celdas[i].classList.remove("on", "rojo");
+          aviso();
         }
         function quitarVida() {
           vidasRest--;
@@ -373,6 +393,17 @@
             est.rojas++; apagar(i); ult = i; P.destello(c, "err");
             if (infinito) { if (quitarVida()) return; } else R.fb.mal();
             encender(); hud(ahora); return;
+          }
+          if (rojaVacio) {
+            var rojos = Object.keys(lit).filter(function (k) { return lit[k].rojo; });
+            if (rojos.length) {
+              rojos.sort(function (a, b) { return lit[a].t - lit[b].t; });
+              var r = +rojos[0];
+              apagar(r); ult = r; est.esquivadas++;
+              P.destello(c, "hit"); R.fb.ok();
+              encender(); hud(ahora);
+              return;
+            }
           }
           est.fuera++; P.destello(c, "err");
           if (infinito) { if (quitarVida()) return; } else R.fb.mal();
@@ -501,6 +532,7 @@
           ["Toques por segundo", R.num(tps, 2)]
         ];
         if (azules) info.stats.splice(1, 0, ["Rojas tocadas", est.rojas]);
+        if ((azules || infinito) && cfg.rojaVacio) info.stats.splice(azules ? 2 : 1, 0, ["Rojas apagadas", est.esquivadas]);
         if (infinito) info.stats.splice(1, 0, ["Nivel alcanzado", nivel + 1]);
         info.hist = { aciertos: est.hits, fallos: fallos, precision: prec, rtMedia: est.rts.length ? Math.round(media) : null, rtMejor: est.rts.length ? Math.round(mejor) : null };
         resultado(info);

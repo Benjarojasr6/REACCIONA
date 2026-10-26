@@ -1,6 +1,6 @@
 /* Service worker de Reacciona: deja la app disponible sin internet.
    Cambia VERSION cada vez que subas cambios, para que los dispositivos se actualicen. */
-var VERSION = "reacciona-v2";
+var VERSION = "reacciona-v4";
 var ARCHIVOS = [
   "./", "index.html", "manifest.webmanifest",
   "css/app.css", "css/juegos.css",
@@ -12,6 +12,10 @@ var ARCHIVOS = [
 
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(ARCHIVOS); }).then(function () { return self.skipWaiting(); }));
+});
+
+self.addEventListener("message", function (e) {
+  if (e.data === "version" && e.source) e.source.postMessage({ version: VERSION });
 });
 
 self.addEventListener("activate", function (e) {

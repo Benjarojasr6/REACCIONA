@@ -208,3 +208,5 @@
 .tiempos { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .tiempos span { padding: .35em .8em; border-radius: 999px; background: #0b1018; border: 1px solid #161e2a; color: var(--suave); font-variant-numeric: tabular-nums; }
 .tiempos b { color: var(--plata); margin-right: .25em; }
+
+.lz-msg.fijo, .lz-msg.fijo:empty { display: block; height: 1.7em; font-size: 1.15rem; letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-inline: 8px; }

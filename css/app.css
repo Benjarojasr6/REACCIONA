@@ -55,6 +55,11 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--plata); out
   font-size: .95rem; letter-spacing: .18em; text-transform: uppercase; color: var(--suave);
   animation: sube .7s .35s ease both;
 }
+#splash .alerta {
+  margin-top: 26px; padding-inline: 20px; text-align: center; max-width: 34ch;
+  font-size: .85rem; letter-spacing: .06em; color: var(--suave); opacity: .75;
+  animation: sube .7s .55s ease both;
+}
 @keyframes entra { from { opacity: 0; transform: scale(.82); } to { opacity: 1; transform: none; } }
 @keyframes sube { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
@@ -136,7 +141,7 @@ input[type=range]::-moz-range-progress { height: 8px; border-radius: 99px; backg
 input[type=range]::-moz-range-thumb { width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 0; }
 
 @media (prefers-reduced-motion: reduce) {
-  #splash img, #splash .marca, #splash .lema { animation: none; }
+  #splash img, #splash .marca, #splash .lema, #splash .alerta { animation: none; }
   .carta { transition: none; }
 }
 
@@ -184,3 +189,20 @@ input.texto:focus { outline: 3px solid #2f7fd1; outline-offset: 2px; }
 .rank small { display: block; color: var(--suave); font-weight: 500; font-size: .8rem; margin-top: 2px; }
 .rank .val { font-family: var(--f-disp); font-weight: 800; font-size: 1.9rem; text-align: right; font-variant-numeric: tabular-nums; color: var(--plata); line-height: 1; }
 .rank .val small { text-align: right; text-transform: uppercase; letter-spacing: .08em; }
+
+.menu-pie .ver { display: block; margin-top: 4px; opacity: .8; }
+.menu-pie .ver:empty { display: none; }
+#aviso-act {
+  position: fixed; z-index: 40; left: 12px; right: 12px; margin: 0 auto; width: fit-content;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 8px 8px 18px; border-radius: 999px;
+  background: var(--plata); color: #07110c; font-weight: 600; box-shadow: 0 10px 34px rgba(0,0,0,.55);
+  animation: sube .35s ease both;
+}
+#aviso-act span { white-space: nowrap; }
+#aviso-act button {
+  min-height: 42px; padding: 0 16px; border: 0; border-radius: 999px; cursor: pointer;
+  background: #0f4a2c; color: #fff; font: 700 .95rem var(--f-ui);
+}
+#aviso-act button.suave { background: transparent; color: #07110c; padding: 0 12px; font-size: 1.1rem; }

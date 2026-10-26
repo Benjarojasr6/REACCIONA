@@ -91,7 +91,29 @@
       desdeMenu = false;
       menu();
     }
+    R.pintarAviso();
   }
+
+  /* Aviso de versión nueva: solo se muestra en el menú, para no interrumpir una partida. */
+  R.hayActualizacion = false;
+  R.pintarAviso = function () {
+    var ya = document.getElementById("aviso-act");
+    var mostrar = R.hayActualizacion && app && app.className === "menu";
+    if (!mostrar) { if (ya) ya.remove(); return; }
+    if (ya) return;
+    var a = R.html(
+      '<div id="aviso-act" role="status"><span>Hay una versión nueva</span>' +
+      '<button type="button" data-a="act">Actualizar</button>' +
+      '<button type="button" class="suave" data-a="luego" aria-label="Ahora no">✕</button></div>'
+    );
+    a.addEventListener("click", function (e) {
+      var b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.a === "act") location.reload();
+      else { R.hayActualizacion = false; a.remove(); }
+    });
+    document.body.appendChild(a);
+  };
 
   function menu() {
     app.className = "menu";
@@ -109,7 +131,7 @@
         '</header>' +
         '<h2 class="menu-sec">Pruebas</h2>' +
         '<div class="cartas"></div>' +
-        '<p class="menu-pie">Estado de Alerta! Este es el detalle...</p>' +
+        '<p class="menu-pie">Estado de Alerta! Este es el detalle...<span class="ver"></span></p>' +
       '</div>'
     );
     var cont = raiz.querySelector(".cartas");
@@ -138,6 +160,20 @@
     pil.addEventListener("click", function () { R.hist.activo = !R.hist.activo; pintarHist(); R.tono && R.tono(R.hist.activo ? 700 : 450, 80, "sine", 0.15); });
     pintarHist();
     app.appendChild(raiz);
+    try {
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage("version");
+      }
+    } catch (e) {}
+  }
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.addEventListener("message", function (e) {
+      if (!e.data || !e.data.version) return;
+      var v = String(e.data.version).replace(/^.*-v/, "");
+      var el = document.querySelector(".menu-pie .ver");
+      if (el) el.textContent = "Versión " + v;
+    });
   }
 
   R.iniciar = function () {
@@ -153,11 +189,26 @@
       setTimeout(function () { if (s.parentNode) s.parentNode.removeChild(s); }, 500);
     }
     splash.addEventListener("click", quitar);
-    setTimeout(quitar, 1600);
+    setTimeout(quitar, 2400);
 
     if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("sw.js").catch(function () {});
+        navigator.serviceWorker.register("sw.js").then(function (reg) {
+          function nueva() { R.hayActualizacion = true; R.pintarAviso(); }
+          if (reg.waiting && navigator.serviceWorker.controller) nueva();
+          reg.addEventListener("updatefound", function () {
+            var w = reg.installing;
+            if (!w) return;
+            w.addEventListener("statechange", function () {
+              if (w.state === "installed" && navigator.serviceWorker.controller) nueva();
+            });
+          });
+          function buscar() { try { reg.update().catch(function () {}); } catch (e) {} }
+          document.addEventListener("visibilitychange", function () {
+            if (document.visibilityState === "visible") buscar();
+          });
+          setInterval(buscar, 30 * 60 * 1000);
+        }).catch(function () {});
       });
     }
   };

@@ -23,7 +23,7 @@ El botón **Historial** (arriba a la derecha del menú) queda apagado cada vez q
 3. Queda con el logo y el nombre "Reacciona", y funciona sin internet después de la primera carga.
 
 ## Actualizar
-Cuando subas cambios, edita `VERSION` en `sw.js` (por ejemplo `reacciona-v3`) para que los dispositivos descarguen la versión nueva. Se actualiza al abrir la app dos veces.
+Cuando subas cambios, edita `VERSION` en `sw.js` (por ejemplo `reacciona-v5`). Los dispositivos con la app abierta o instalada lo detectan y muestran en el menú el aviso **"Hay una versión nueva · Actualizar"**. El número de versión se ve al final del menú.
 
 ## Agregar una prueba nueva
 1. Crea `js/games/<nombre>.js` y llama a `Reacciona.registrar({ id, nombre, descripcion, preview(), iniciar(contenedor) })`. `iniciar` debe devolver una función que limpie timers y listeners. Usa `colores.js` como modelo.
