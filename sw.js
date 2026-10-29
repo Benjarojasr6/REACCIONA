@@ -1,51 +1,64 @@
-/* Service worker de Reacciona: deja la app disponible sin internet.
-   Cambia VERSION cada vez que subas cambios, para que los dispositivos se actualicen. */
-var VERSION = "reacciona-v5";
-var ARCHIVOS = [
-  "./", "index.html", "manifest.webmanifest",
-  "css/app.css", "css/juegos.css",
-  "js/core.js", "js/sonido.js", "js/xlsx.js", "js/historial.js", "js/main.js",
-  "js/games/colores.js", "js/games/luces.js", "js/games/reaccion.js",
-  "icon-192.png", "icon-512.png", "maskable-192.png", "maskable-512.png",
-  "apple-touch-icon.png", "favicon-64.png"
+/* Service worker: la app funciona sin conexión.
+   Al subir una versión nueva a GitHub, cambia VERSION para forzar la actualización. */
+const VERSION = '1.4.2';
+const CACHE = 'kine-sw-' + VERSION;
+
+const ARCHIVOS = [
+  './', './index.html', './manifest.webmanifest',
+  './css/app.css', './css/report.css',
+  './js/store.js', './js/calc.js', './js/categorias.js', './js/icons.js', './js/bodymap.js',
+  './js/report.js', './js/pdf.js', './js/ui.js', './js/forms.js', './js/manual.js', './js/screens.js', './js/bitacora.js', './js/navegacion.js', './js/kine.js', './js/seguro.js', './js/partidos.js', './js/firebase-config.js', './js/nube.js', './js/app.js', './js/recordatorios.js',
+  './fonts/Inter-Regular.woff', './fonts/Inter-SemiBold.woff', './fonts/Inter-Bold.woff', './fonts/Caladea-Regular.woff', './fonts/Caladea-Bold.woff', './fonts/Caladea-Italic.woff',
+  './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './favicon.png',
+  './img/insignia-512.png', './img/insignia-kinesiologia.png', './img/escudo-sw-verde.png', './img/escudo-sw-blanco.png',
+  './img/iconos/atenciones.png', './img/iconos/termoterapia.png', './img/iconos/crioterapia.png',
+  './img/iconos/vendaje.png', './img/iconos/ejercicio.png', './img/iconos/presoterapia.png',
+  './img/iconos/masaje.png', './img/iconos/puncion.png', './img/iconos/mok.png',
+  './img/rivales/palestino.png', './img/rivales/audax.png', './img/rivales/everton.png',
+  './img/rivales/coquimbo.png', './img/rivales/iquique.png', './img/rivales/u-de-chile.png',
+  './img/rivales/temuco.png', './img/rivales/cobreloa.png', './img/rivales/ohiggins.png',
+  './img/rivales/colo-colo.png', './img/rivales/union-espanola.png', './img/rivales/u-de-concepcion.png',
+  './img/rivales/recoleta.png', './img/rivales/u-catolica.png', './img/rivales/huachipato.png'
 ];
 
-self.addEventListener("install", function (e) {
-  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(ARCHIVOS); }).then(function () { return self.skipWaiting(); }));
+// Librerías de Firebase (se cargan desde Google): se guardan aparte para que la app abra sin conexión.
+const SDK_CACHE = 'kine-sdk';
+const SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
+const SDK_ARCHIVOS = ['firebase-app-compat.js', 'firebase-auth-compat.js', 'firebase-firestore-compat.js'].map((f) => SDK + f);
+
+self.addEventListener('install', (e) => {
+  e.waitUntil(Promise.all([
+    caches.open(CACHE).then((c) => c.addAll(ARCHIVOS)),
+    caches.open(SDK_CACHE).then((c) => Promise.all(SDK_ARCHIVOS.map((u) => c.add(new Request(u, { mode: 'no-cors' })).catch(() => {}))))
+  ]));
 });
 
-self.addEventListener("message", function (e) {
-  if (e.data === "version" && e.source) e.source.postMessage({ version: VERSION });
-});
+// La versión nueva espera a que la persona toque “Actualizar” en el aviso de la app.
+self.addEventListener('message', (e) => { if (e.data === 'SKIP_WAITING') self.skipWaiting(); });
 
-self.addEventListener("activate", function (e) {
+self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then(function (ks) {
-      return Promise.all(ks.filter(function (k) { return k !== VERSION; }).map(function (k) { return caches.delete(k); }));
-    }).then(function () { return self.clients.claim(); })
+    caches.keys()
+      .then((ks) => Promise.all(ks.filter((k) => k.startsWith('kine-sw-') && k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener("fetch", function (e) {
-  var req = e.request;
-  if (req.method !== "GET") return;
-  var url = new URL(req.url);
-  var propio = url.origin === self.location.origin;
-  var fuente = url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com";
-  if (!propio && !fuente) return;
-
-  // Archivos propios: responde desde la copia guardada y actualiza en segundo plano.
-  // Tipografías: se guardan la primera vez y se reutilizan.
+// Primero lo guardado (rápido y sin conexión); en segundo plano se actualiza.
+self.addEventListener('fetch', (e) => {
+  const req = e.request, url = new URL(req.url);
+  if (req.method === 'GET' && url.hostname === 'www.gstatic.com' && url.pathname.startsWith('/firebasejs/')) {
+    e.respondWith(caches.open(SDK_CACHE).then((c) => c.match(req).then((hit) => hit || fetch(req).then((res) => { c.put(req, res.clone()); return res; }))));
+    return;
+  }
+  if (req.method !== 'GET' || url.origin !== location.origin) return;
   e.respondWith(
-    caches.open(VERSION).then(function (cache) {
-      return cache.match(req, { ignoreSearch: propio }).then(function (guardado) {
-        var red = fetch(req).then(function (resp) {
-          if (resp && (resp.ok || resp.type === "opaque")) cache.put(req, resp.clone());
-          return resp;
-        }).catch(function () { return guardado; });
-        if (guardado) return guardado;
-        return red.then(function (r) { return r || (req.mode === "navigate" ? cache.match("index.html") : r); });
-      });
+    caches.match(req, { ignoreSearch: true }).then((hit) => {
+      const red = fetch(req).then((res) => {
+        if (res && res.ok) { const copia = res.clone(); caches.open(CACHE).then((c) => c.put(req, copia)); }
+        return res;
+      }).catch(() => hit);
+      return hit || red;
     })
   );
 });
