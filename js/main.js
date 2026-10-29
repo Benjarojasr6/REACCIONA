@@ -1,1 +1,0 @@
-Reacciona.iniciar();
