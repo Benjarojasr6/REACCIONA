@@ -210,3 +210,40 @@
 .tiempos b { color: var(--plata); margin-right: .25em; }
 
 .lz-msg.fijo, .lz-msg.fijo:empty { display: block; height: 1.7em; font-size: 1.15rem; letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-inline: 8px; }
+
+/* ---------- Números en movimiento ---------- */
+.pv-numeros { position: relative; display: block; width: 100%; height: 100%; }
+.pv-numeros i {
+  position: absolute; width: 34%; aspect-ratio: 1; border-radius: 22%; font-style: normal;
+  background: var(--c); border: 2px solid var(--b); color: #fff;
+  display: grid; place-items: center; font: 800 1.15rem/1 var(--f-disp);
+}
+.pv-numeros i.sig { color: #ff3b3b; }
+.nm-area { position: relative; flex: 1; min-height: 0; }
+.nm-campo {
+  position: absolute; overflow: hidden; border-radius: 16px; background: #080d14; border: 1px solid #141c27; touch-action: none;
+  top: 8px; bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px));
+}
+.nm-t {
+  position: absolute; left: 0; top: 0; display: grid; place-items: center; box-sizing: border-box;
+  border-radius: 22%; background: var(--c); border: 2px solid var(--b); color: #fff;
+  font-family: var(--f-disp); font-weight: 800; line-height: 1; will-change: transform; cursor: pointer;
+  -webkit-user-select: none; user-select: none; transition: opacity .16s;
+}
+.nm-t span { display: block; transition: transform .16s ease; padding-bottom: .04em; }
+.nm-t.sig span { color: #ff3b3b; text-shadow: 0 0 10px rgba(255,59,59,.75); }
+.nm-t.hecho { opacity: .3; border-color: #3a8a63; pointer-events: none; }
+.nm-t.sale { opacity: 0; pointer-events: none; }
+.nm-t.sale span { transform: scale(.4); }
+.nm-t.mal span { animation: nmSacude .24s; }
+.nm-t.oculto span { visibility: hidden; }
+.nm-t.oculto::after { content: "?"; position: absolute; inset: 0; display: grid; place-items: center; color: #9fb0c4; }
+.nm-t.oculto.revela span { visibility: visible; }
+.nm-t.oculto.revela::after { content: none; }
+@keyframes nmSacude { 20% { transform: translateX(-6px); } 60% { transform: translateX(6px); } }
+.nm.golpe::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  box-shadow: inset 0 0 0 6px rgba(255,111,97,.75), inset 0 0 70px rgba(255,111,97,.35);
+}
+@media (prefers-reduced-motion: reduce) { .nm-t.mal span { animation: none; } }

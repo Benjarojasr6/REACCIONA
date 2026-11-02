@@ -6,6 +6,7 @@ Pruebas incluidas:
 - **Colores y Números**: color a pantalla completa con un número del 1 al 4. Colores editables.
 - **Luces**: cuadrícula de círculos que se encienden en azul (#084E96), configurable. Modos: Contrarreloj, Meta en tiempo, Carrera, Infinito (1 o 3 vidas, dificultad creciente y luces rojas), Solo azules y Secuencia.
 - **Reacción simple**: un círculo se enciende en un momento al azar; promedio en milisegundos.
+- **Números en movimiento**: cuadritos numerados que se mueven; hay que tocarlos en orden (Contra el tiempo, Lo más rápido, Desaparecen y Memoria).
 
 Extras: sonido y vibración (se apagan en Opciones), historial por jugador con ranking y exportación a Excel.
 
