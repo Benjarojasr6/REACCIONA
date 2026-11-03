@@ -247,3 +247,28 @@
   box-shadow: inset 0 0 0 6px rgba(255,111,97,.75), inset 0 0 70px rgba(255,111,97,.35);
 }
 @media (prefers-reduced-motion: reduce) { .nm-t.mal span { animation: none; } }
+
+/* ---------- ¿Dónde está la pelota? ---------- */
+.pv-vasos { position: relative; display: flex; align-items: flex-end; justify-content: center; gap: 6%; width: 100%; height: 100%; padding: 24% 8% 18%; box-sizing: border-box; }
+.pv-vasos i { flex: 1; max-width: 30%; height: 62%; background: #c4222e; clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%); }
+.pv-vasos b { position: absolute; left: 50%; bottom: 8%; width: 20%; aspect-ratio: 1; margin-left: -10%; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #cfcfcf); box-shadow: inset 0 0 0 2px #222; }
+.vs-area { position: relative; flex: 1; min-height: 0; }
+.vs-campo {
+  position: absolute; overflow: hidden; border-radius: 16px; border: 1px solid #1d3a2a; touch-action: none;
+  background: repeating-linear-gradient(90deg, #0d2a1b 0 48px, #0f301f 48px 96px);
+  top: 8px; bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px));
+}
+.vs-c { position: absolute; left: 0; top: 0; transition-property: transform; transition-timing-function: ease-in-out; will-change: transform; cursor: pointer; -webkit-user-select: none; user-select: none; }
+.vs-bola { position: absolute; left: 50%; bottom: 2%; transform: translateX(-50%); visibility: hidden; filter: drop-shadow(0 4px 4px rgba(0,0,0,.5)); }
+.vs-bola svg { display: block; width: 100%; height: 100%; }
+.vs-c.con-bola .vs-bola { visibility: visible; }
+.vs-vaso { position: absolute; inset: 0; transition: transform .35s ease; filter: drop-shadow(0 6px 5px rgba(0,0,0,.45)); }
+.vs-vaso svg { display: block; width: 100%; height: 100%; }
+.vs-c.alz .vs-vaso { transform: translateY(-72%); }
+.vs-c.ok .vs-vaso { filter: drop-shadow(0 0 12px rgba(80,220,140,.9)); }
+.vs-c.mal .vs-vaso { filter: drop-shadow(0 0 12px rgba(255,111,97,.95)); }
+.vs-n { position: absolute; inset: 0; display: none; place-items: center; padding-top: 14%; font-family: var(--f-disp); font-weight: 800; line-height: 1; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+.vs-campo.numerado .vs-n { display: grid; }
+.vs.golpe::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 6px rgba(255,111,97,.75), inset 0 0 70px rgba(255,111,97,.35); }
+.vs .lz-barra i { transition: none; }

@@ -7,6 +7,7 @@ Pruebas incluidas:
 - **Luces**: cuadrícula de círculos que se encienden en azul (#084E96), configurable. Modos: Contrarreloj, Meta en tiempo, Carrera, Infinito (1 o 3 vidas, dificultad creciente y luces rojas), Solo azules y Secuencia.
 - **Reacción simple**: un círculo se enciende en un momento al azar; promedio en milisegundos.
 - **Números en movimiento**: cuadritos numerados que se mueven; hay que tocarlos en orden (Contra el tiempo, Lo más rápido, Desaparecen y Memoria).
+- **¿Dónde está la pelota?**: una pelota de fútbol queda bajo un vaso, los vasos se mezclan y hay que encontrarla (por niveles de 3, 9 o 12 vasos, o en racha con dificultad creciente).
 
 Extras: sonido y vibración (se apagan en Opciones), historial por jugador con ranking y exportación a Excel.
 
