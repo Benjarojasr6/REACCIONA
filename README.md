@@ -8,6 +8,7 @@ Pruebas incluidas:
 - **Reacción simple**: un círculo se enciende en un momento al azar; promedio en milisegundos.
 - **Números en movimiento**: cuadritos numerados que se mueven; hay que tocarlos en orden (Contra el tiempo, Lo más rápido, Desaparecen y Memoria).
 - **¿Dónde está la pelota?**: una pelota de fútbol queda bajo un vaso, los vasos se mezclan y hay que encontrarla (por niveles de 3, 9 o 12 vasos, o en racha con dificultad creciente).
+- **Personalizado**: entrenamiento a la medida en 4 pasos (estímulos, transición, duración y resumen) con colores propios, flechas, números, letras, formas, palabras, cálculos, voz, combinaciones (color + estímulo, palabra y color, pelota en movimiento, ver y escuchar), parada (no-go), series con descanso y favoritos.
 
 Extras: sonido y vibración (se apagan en Opciones), historial por jugador con ranking y exportación a Excel.
 
