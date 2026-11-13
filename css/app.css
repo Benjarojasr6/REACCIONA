@@ -219,3 +219,21 @@ input.texto:focus { outline: 3px solid #2f7fd1; outline-offset: 2px; }
   background: #0f4a2c; color: #fff; font: 700 .95rem var(--f-ui);
 }
 #aviso-act button.suave { background: transparent; color: #07110c; padding: 0 12px; font-size: 1.1rem; }
+
+/* ---------- Futbolizado de primera ---------- */
+html[data-fut="primera"] { --bg: #0b3d1e; --panel: #11512a; --panel-2: #166332; --linea: rgba(255,255,255,.28); --acc: #ffd21f; --ok: #7dff9f; --suave: #cfe9d6; }
+html[data-fut="primera"] body, html[data-fut="primera"] #app { background: repeating-linear-gradient(90deg, #0c4121 0 48px, #0f4a26 48px 96px); }
+html[data-fut="primera"] #app::before { content: ""; position: fixed; left: 50%; top: 50%; width: 220px; height: 220px; margin: -110px 0 0 -110px; border: 3px solid rgba(255,255,255,.1); border-radius: 50%; pointer-events: none; z-index: 0; }
+html[data-fut="primera"] #app::after { content: ""; position: fixed; left: 0; right: 0; top: 50%; height: 3px; background: rgba(255,255,255,.1); pointer-events: none; z-index: 0; }
+html[data-fut="primera"] .menu-in, html[data-fut="primera"] .lz { position: relative; z-index: 1; }
+html[data-fut="primera"] .menu-tit p::after { content: " ⚽"; }
+html[data-fut="primera"] .menu-sec { color: #ffd21f; }
+html[data-fut="primera"] .carta { border-color: rgba(255,255,255,.35); box-shadow: inset 4px 0 0 #fff; }
+html[data-fut="primera"] .carta:active { transform: scale(.98); }
+html[data-fut="primera"] .lz-top h2, html[data-fut="primera"] .lz-res h2 { color: #ffd21f; }
+html[data-fut="primera"] .btn.primario { background: #ffd21f; color: #0b3d1e; }
+html[data-fut="primera"] .chip.sel { background: #ffd21f; color: #0b3d1e; border-color: #ffd21f; }
+html[data-fut="primera"] .fl-top, html[data-fut="primera"] .bt-top { background: #0b3d1e; border-bottom: 3px solid #fff; }
+html[data-fut="primera"] .bt { background: repeating-linear-gradient(90deg, #0c4121 0 48px, #0f4a26 48px 96px); }
+html[data-fut="primera"] .fl-top { --fl-top: #0b3d1e; }
+html[data-fut="primera"] .bt-top h2 { background: none; color: #ffd21f; -webkit-text-fill-color: #ffd21f; }

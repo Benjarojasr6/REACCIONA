@@ -9,6 +9,9 @@ Pruebas incluidas:
 - **Números en movimiento**: cuadritos numerados que se mueven; hay que tocarlos en orden (Contra el tiempo, Lo más rápido, Desaparecen y Memoria).
 - **¿Dónde está la pelota?**: una pelota de fútbol queda bajo un vaso, los vasos se mezclan y hay que encontrarla (por niveles de 3, 9 o 12 vasos, o en racha con dificultad creciente).
 - **Personalizado**: entrenamiento a la medida en 4 pasos (estímulos, transición, duración y resumen) con colores propios, flechas, números, letras, formas, palabras, cálculos, voz, combinaciones (color + estímulo, palabra y color, pelota en movimiento, ver y escuchar), parada (no-go), series con descanso y favoritos.
+- **Flechas**: rompecabezas de flechas serpiente que hay que sacar del tablero sin que choquen. 8 dificultades (de «Muy fácil» 6×8 a «Imposible» 40×58), modos Libre, Niveles y Desafío del día, gotas, pistas, zoom y 3 temas. Los tableros siempre tienen solución.
+- **Botellas**: adivina el orden secreto de 6 botellas (8 colores, 10 intentos, pistas de color y lugar).
+- **Futbolizado** (Opciones): «Poco futbolizado» o «Futbolizado de primera», que ambienta toda la app en el fútbol.
 
 Extras: sonido y vibración (se apagan en Opciones), historial por jugador con ranking y exportación a Excel.
 

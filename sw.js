@@ -1,11 +1,14 @@
 /* Service worker de Reacciona: deja la app disponible sin internet.
    Cambia VERSION cada vez que subas cambios, para que los dispositivos se actualicen. */
-var VERSION = "reacciona-v8";
+var VERSION = "reacciona-v10";
 var ARCHIVOS = [
   "./", "index.html", "manifest.webmanifest",
   "css/app.css", "css/juegos.css",
-  "js/core.js", "js/sonido.js", "js/xlsx.js", "js/historial.js", "js/main.js",
+  "js/core.js", "js/sonido.js", "js/xlsx.js", "js/historial.js",
+  "js/futbol.js", "js/main.js",
   "js/games/colores.js", "js/games/luces.js", "js/games/reaccion.js", "js/games/numeros.js", "js/games/vasos.js", "js/games/personalizado.js",
+  "js/games/flechas.js",
+  "js/games/botellas.js",
   "icon-192.png", "icon-512.png", "maskable-192.png", "maskable-512.png",
   "apple-touch-icon.png", "favicon-64.png"
 ];

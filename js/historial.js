@@ -140,6 +140,10 @@
             "<h3>Sonido y vibración</h3>" +
             interruptor("sonido", "Sonido", "Avisos al acertar, fallar y en la cuenta regresiva.", false) +
             interruptor("vibracion", "Vibración", R.puedeVibrar ? "" : "No está disponible en este dispositivo.", !R.puedeVibrar) +
+            "<h3>Futbolizado</h3>" +
+            '<p class="nota">Ambienta todas las pruebas en el fútbol.</p>' +
+            '<div class="chips"><button type="button" class="chip' + (R.ajustes.futbol !== "primera" ? " sel" : "") + '" data-fut="poco">Poco futbolizado</button>' +
+            '<button type="button" class="chip' + (R.ajustes.futbol === "primera" ? " sel" : "") + '" data-fut="primera">Futbolizado de primera</button></div>' +
             "<h3>Ranking</h3>" + ranking +
             "<h3>Historial</h3>" +
             '<p class="nota">' + l.length + (l.length === 1 ? " partida guardada" : " partidas guardadas") + " en esta tablet. " +
@@ -162,7 +166,10 @@
       var b = e.target.closest("button");
       if (!b) return;
       if (b.dataset.a === "volver") R.salir();
-      else if (b.dataset.sw) {
+      else if (b.dataset.fut) {
+        R.ajustes.futbol = b.dataset.fut; R.guardarAjustes(); R.aplicarFutbol();
+        R.fb && R.fb.ok(); aviso = ""; pintar();
+      } else if (b.dataset.sw) {
         R.ajustes[b.dataset.sw] = !R.ajustes[b.dataset.sw];
         R.guardarAjustes();
         if (R.ajustes[b.dataset.sw]) { if (b.dataset.sw === "sonido") R.fb.ok(); else R.vibrar(30); }
