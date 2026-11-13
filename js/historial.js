@@ -144,6 +144,10 @@
             '<p class="nota">Ambienta todas las pruebas en el fútbol.</p>' +
             '<div class="chips"><button type="button" class="chip' + (R.ajustes.futbol !== "primera" ? " sel" : "") + '" data-fut="poco">Poco futbolizado</button>' +
             '<button type="button" class="chip' + (R.ajustes.futbol === "primera" ? " sel" : "") + '" data-fut="primera">Futbolizado de primera</button></div>' +
+            "<h3>Pantalla de inicio</h3>" +
+            '<p class="nota">Texto que aparece al final del menú y al abrir la app.</p>' +
+            '<input id="pie-txt" class="texto" type="text" maxlength="120" autocomplete="off" value="' + R.esc(R.textoPie()) + '">' +
+            '<div class="acciones"><button class="btn" type="button" data-a="pie-def" style="grid-column:1/-1">Restablecer texto original</button></div>' +
             "<h3>Ranking</h3>" + ranking +
             "<h3>Historial</h3>" +
             '<p class="nota">' + l.length + (l.length === 1 ? " partida guardada" : " partidas guardadas") + " en esta tablet. " +
@@ -162,10 +166,18 @@
     }
 
     cont.addEventListener("click", onClick);
+    function onInput(e) {
+      if (e.target && e.target.id === "pie-txt") {
+        R.ajustes.pie = e.target.value; R.guardarAjustes();
+        var a = document.querySelector("#splash .alerta"); if (a) a.textContent = R.textoPie();
+      }
+    }
+    cont.addEventListener("input", onInput);
     function onClick(e) {
       var b = e.target.closest("button");
       if (!b) return;
       if (b.dataset.a === "volver") R.salir();
+      else if (b.dataset.a === "pie-def") { delete R.ajustes.pie; R.guardarAjustes(); aviso = "Texto restablecido."; pintar(); }
       else if (b.dataset.fut) {
         R.ajustes.futbol = b.dataset.fut; R.guardarAjustes(); R.aplicarFutbol();
         R.fb && R.fb.ok(); aviso = ""; pintar();
@@ -183,7 +195,7 @@
       else if (b.dataset.a === "borrar-si") { R.hist.borrar(); confirmando = false; aviso = "Historial borrado."; pintar(); }
     }
     pintar();
-    return function () { cont.removeEventListener("click", onClick); };
+    return function () { cont.removeEventListener("click", onClick); cont.removeEventListener("input", onInput); };
   };
 
   /* Construye el registro de una partida y lo guarda si el historial está activo. */

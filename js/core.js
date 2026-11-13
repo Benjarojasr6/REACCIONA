@@ -131,9 +131,10 @@
         '</header>' +
         '<h2 class="menu-sec">Pruebas</h2>' +
         '<div class="cartas"></div>' +
-        '<p class="menu-pie">Estado de Alerta! Este es el detalle...<span class="ver"></span></p>' +
+        '<p class="menu-pie"><span class="pie-tx"></span><span class="ver"></span></p>' +
       '</div>'
     );
+    raiz.querySelector(".pie-tx").textContent = R.textoPie ? R.textoPie() : "Estado de Alerta! Este es el detalle...";
     var cont = raiz.querySelector(".cartas");
     R.juegos.forEach(function (j) {
       var c = R.html(

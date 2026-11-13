@@ -4,14 +4,14 @@
    Los tableros se generan solos y siempre tienen solución. 8 dificultades, de «Muy fácil» a «Imposible». */
 (function (R) {
   var TIERS = [
-    { n: "Muy fácil", c: 6, f: 8, min: 2, max: 4, rec: 0.7, desc: "Para empezar" },
-    { n: "Fácil", c: 8, f: 11, min: 2, max: 6, rec: 0.65, desc: "Tablero chico" },
-    { n: "Normal", c: 11, f: 15, min: 2, max: 8, rec: 0.6, desc: "Ya hay que pensar" },
-    { n: "Difícil", c: 15, f: 21, min: 2, max: 12, rec: 0.55, desc: "Caminos largos" },
-    { n: "Muy difícil", c: 20, f: 28, min: 2, max: 16, rec: 0.5, desc: "Hay que hacer zoom" },
-    { n: "Extremo", c: 26, f: 36, min: 2, max: 22, rec: 0.45, desc: "Laberinto enorme" },
-    { n: "Mega difícil", c: 32, f: 46, min: 2, max: 28, rec: 0.4, desc: "Solo para valientes" },
-    { n: "Imposible", c: 40, f: 58, min: 2, max: 36, rec: 0.35, desc: "Paciencia infinita" }
+    { n: "Muy fácil", c: 6, f: 8, min: 2, max: 4, rec: 0.7, libre: 1, desc: "Para empezar" },
+    { n: "Fácil", c: 8, f: 11, min: 2, max: 6, rec: 0.65, libre: 0.7, desc: "Tablero chico" },
+    { n: "Normal", c: 11, f: 15, min: 2, max: 8, rec: 0.6, libre: 0.45, desc: "Ya hay que pensar" },
+    { n: "Difícil", c: 15, f: 21, min: 2, max: 12, rec: 0.55, libre: 0.3, desc: "Caminos largos" },
+    { n: "Muy difícil", c: 20, f: 28, min: 2, max: 16, rec: 0.5, libre: 0.2, desc: "Hay que hacer zoom" },
+    { n: "Extremo", c: 26, f: 36, min: 2, max: 22, rec: 0.45, libre: 0.12, desc: "Laberinto enorme" },
+    { n: "Mega difícil", c: 32, f: 46, min: 2, max: 28, rec: 0.4, libre: 0.08, desc: "Solo para valientes" },
+    { n: "Imposible", c: 40, f: 58, min: 2, max: 36, rec: 0.35, libre: 0.05, desc: "Paciencia infinita" }
   ];
   var TEMAS = [
     { id: "crema", n: "Crema", bg: "#f3ead8", ink: "#3a2418", dot: "rgba(58,36,24,.2)", top: "#b3622d", panel: "#fffaf0", mute: "#8a6a55" },
@@ -34,20 +34,33 @@
   /* ---------- generador ----------
      Cada flecha nueva se coloca solo si su camino hasta el borde está libre de las ya puestas.
      Así existe siempre un orden para sacarlas todas (la última puesta sale primero). */
-  function generar(T, seed) {
+  /* Tablero completo y siempre resoluble.
+     Cada flecha "estorba" a las que tienen una celda suya en su camino de salida. Mientras ese grafo no tenga
+     ciclos, existe un orden para sacarlas todas. Cada flecha nueva solo se acepta si no crea un ciclo. */
+  function generarUno(T, seed) {
     var rng = mulberry32(seed), C = T.c, Rw = T.f, N = C * Rw;
-    var occ = new Int16Array(N).fill(-1), arrows = [];
+    var occ = new Int16Array(N).fill(-1), arrows = [], rayMem = [], out = [], marca = [], marcaN = 0, i;
+    for (i = 0; i < N; i++) rayMem.push([]);
 
     function libre(x, y) { return x >= 0 && y >= 0 && x < C && y < Rw && occ[y * C + x] < 0; }
-    function rayoLibre(path, d) {
-      var h = path[path.length - 1], x = h % C, y = (h - x) / C;
-      x += DX[d]; y += DY[d];
-      while (x >= 0 && y >= 0 && x < C && y < Rw) {
-        var i = y * C + x;
-        if (occ[i] >= 0 || path.indexOf(i) >= 0) return false;
-        x += DX[d]; y += DY[d];
+    function rayo(h, d) {
+      var r = [], x = h % C + DX[d], y = Math.floor(h / C) + DY[d];
+      while (x >= 0 && y >= 0 && x < C && y < Rw) { r.push(y * C + x); x += DX[d]; y += DY[d]; }
+      return r;
+    }
+    function llega(desde, objetivos) { /* ¿desde alguna de estas flechas se alcanza alguna de las objetivo, siguiendo "estorbada por"? */
+      if (!desde.length || !objetivos.length) return false;
+      marcaN++;
+      var obj = {}, k; objetivos.forEach(function (z) { obj[z] = 1; });
+      var pila = desde.slice();
+      while (pila.length) {
+        var a = pila.pop();
+        if (obj[a]) return true;
+        if (marca[a] === marcaN) continue;
+        marca[a] = marcaN;
+        var o = out[a]; for (k = 0; k < o.length; k++) pila.push(o[k]);
       }
-      return true;
+      return false;
     }
     function dirFinal(path) {
       var n = path.length;
@@ -70,43 +83,97 @@
       }
       return path;
     }
-    function poner(path, d) {
-      var id = arrows.length;
-      for (var i = 0; i < path.length; i++) occ[path[i]] = id;
-      arrows.push({ id: id, cells: path, dir: d });
+    function unicos(l) { var m = {}, r = []; l.forEach(function (v) { if (!m[v]) { m[v] = 1; r.push(v); } }); return r; }
+    /* ¿se puede poner esta flecha? devuelve null o {Y, Z} */
+    function probar(path, d, pLibre) {
+      var h = path[path.length - 1], r = rayo(h, d), Y = [], k, Z = [];
+      for (k = 0; k < r.length; k++) {
+        if (path.indexOf(r[k]) >= 0) return null;
+        if (occ[r[k]] >= 0) Y.push(occ[r[k]]);
+      }
+      Y = unicos(Y);
+      if (!Y.length && rng() >= pLibre) return null;
+      for (k = 0; k < path.length; k++) Z = Z.concat(rayMem[path[k]]);
+      Z = unicos(Z);
+      if (llega(Y, Z)) return null;
+      return { Y: Y, Z: Z, r: r };
     }
-    function intentar(s, L) {
+    function poner(path, d, ok) {
+      var id = arrows.length;
+      for (var k = 0; k < path.length; k++) occ[path[k]] = id;
+      arrows.push({ id: id, cells: path, dir: d });
+      out.push(ok.Y.slice());
+      ok.r.forEach(function (c) { rayMem[c].push(id); });
+      ok.Z.forEach(function (z) { out[z].push(id); });
+    }
+    function intentar(s, L, pLibre) {
       var path = caminar(s, L), cand = [path];
       if (path.length > 1) cand.push(path.slice().reverse());
       if (rng() < 0.5) cand.reverse();
-      for (var i = 0; i < cand.length; i++) {
-        var p = cand[i], d = dirFinal(p);
+      for (var k = 0; k < cand.length; k++) {
+        var p = cand[k], d = dirFinal(p), ok;
         if (d < 0) {
           var o = Math.floor(rng() * 4);
-          for (var k = 0; k < 4; k++) { var dd = (o + k) % 4; if (rayoLibre(p, dd)) { poner(p, dd); return true; } }
-        } else if (rayoLibre(p, d)) { poner(p, d); return true; }
+          for (var q = 0; q < 4; q++) { var dd = (o + q) % 4; ok = probar(p, dd, pLibre); if (ok) { poner(p, dd, ok); return true; } }
+        } else { ok = probar(p, d, pLibre); if (ok) { poner(p, d, ok); return true; } }
       }
       return false;
     }
-
-    var tries = N * 40;
-    for (var t = 0; t < tries; t++) {
-      var s = Math.floor(rng() * N);
-      if (t < tries * 0.35) { /* al principio se llena el centro, que luego queda tapado */
-        for (var q = 0; q < 3; q++) {
-          var s2 = Math.floor(rng() * N);
-          if (Math.abs((s2 % C) - C / 2) / C + Math.abs(Math.floor(s2 / C) - Rw / 2) / Rw < Math.abs((s % C) - C / 2) / C + Math.abs(Math.floor(s / C) - Rw / 2) / Rw) s = s2;
+    function extender() {
+      var vacias = [], j, cambios = 0;
+      for (j = 0; j < N; j++) if (occ[j] < 0) vacias.push(j);
+      for (j = vacias.length - 1; j > 0; j--) { var m = Math.floor(rng() * (j + 1)), t = vacias[j]; vacias[j] = vacias[m]; vacias[m] = t; }
+      vacias.forEach(function (h) {
+        if (occ[h] >= 0) return;
+        var x = h % C, y = (h - x) / C, cands = [];
+        for (var k = 0; k < 4; k++) {
+          var nx = x + DX[k], ny = y + DY[k];
+          if (nx < 0 || ny < 0 || nx >= C || ny >= Rw) continue;
+          var id = occ[ny * C + nx];
+          if (id < 0) continue;
+          var A = arrows[id];
+          if (A.cells[0] !== ny * C + nx) continue;
+          if (A.cells.length === 1 && h !== A.cells[0] - DX[A.dir] - DY[A.dir] * C) continue;
+          if (A.cells.length === 1 && (x < 0 || (A.dir === 0 && x !== nx - 1) || (A.dir === 2 && x !== nx + 1))) continue;
+          if (rayMem[h].indexOf(id) >= 0) continue;
+          if (llega([id], rayMem[h])) continue;
+          cands.push(A);
         }
-      }
-      if (occ[s] >= 0) continue;
+        if (!cands.length) return;
+        var A2 = cands[Math.floor(rng() * cands.length)];
+        A2.cells.unshift(h); occ[h] = A2.id; cambios++;
+        rayMem[h].forEach(function (z) { if (out[z].indexOf(A2.id) < 0) out[z].push(A2.id); });
+      });
+      return cambios;
+    }
+
+    var vacias = 0;
+    function contar() { vacias = 0; for (var c = 0; c < N; c++) if (occ[c] < 0) vacias++; return vacias; }
+    var tries = N * 12;
+    for (var t = 0; t < tries; t++) {
+      var s0 = Math.floor(rng() * N);
+      if (occ[s0] >= 0) continue;
       var L = T.min + Math.floor(Math.pow(rng(), 1.25) * (T.max - T.min + 1));
-      intentar(s, L);
+      intentar(s0, L, T.libre);
+      if (t % (N * 2) === 0) extender();
     }
-    /* relleno de huecos con flechas cortas */
-    for (var pasada = 0; pasada < 4; pasada++) {
-      for (var c = 0; c < N; c++) { if (occ[c] < 0) intentar(c, 1 + (pasada % 3)); }
+    for (var pasada = 0; pasada < 10; pasada++) { if (!extender()) break; }
+    for (var rel = 0; rel < 4 && contar(); rel++) {
+      for (var c2 = 0; c2 < N; c2++) if (occ[c2] < 0) intentar(c2, 1 + Math.floor(rng() * 3), 1);
+      for (var pa = 0; pa < 10; pa++) { if (!extender()) break; }
     }
-    return { cols: C, rows: Rw, arrows: arrows };
+    contar();
+    return { cols: C, rows: Rw, arrows: arrows, vacias: vacias };
+  }
+
+  function generar(T, seed) {
+    var mejor = null;
+    for (var k = 0; k < 14; k++) {
+      var P = generarUno(T, seed + k * 7919);
+      if (!mejor || P.vacias < mejor.vacias) mejor = P;
+      if (!P.vacias) break;
+    }
+    return mejor;
   }
 
   function movibles(P) { /* para pruebas: ¿se puede vaciar el tablero? */

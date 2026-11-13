@@ -11,7 +11,7 @@ Pruebas incluidas:
 - **Personalizado**: entrenamiento a la medida en 4 pasos (estímulos, transición, duración y resumen) con colores propios, flechas, números, letras, formas, palabras, cálculos, voz, combinaciones (color + estímulo, palabra y color, pelota en movimiento, ver y escuchar), parada (no-go), series con descanso y favoritos.
 - **Flechas**: rompecabezas de flechas serpiente que hay que sacar del tablero sin que choquen. 8 dificultades (de «Muy fácil» 6×8 a «Imposible» 40×58), modos Libre, Niveles y Desafío del día, gotas, pistas, zoom y 3 temas. Los tableros siempre tienen solución.
 - **Botellas**: adivina el orden secreto de 6 botellas (8 colores, 10 intentos, pistas de color y lugar).
-- **Futbolizado** (Opciones): «Poco futbolizado» o «Futbolizado de primera», que ambienta toda la app en el fútbol.
+- **Futbolizado** (Opciones): «Poco futbolizado» o «Futbolizado de primera»; solo cambia el diseño, no los textos. También se puede editar el texto de la pantalla de inicio.
 
 Extras: sonido y vibración (se apagan en Opciones), historial por jugador con ranking y exportación a Excel.
 
