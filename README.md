@@ -12,6 +12,7 @@ Pruebas incluidas:
 - **Flechas**: rompecabezas de flechas serpiente que hay que sacar del tablero sin que choquen. 8 dificultades (de «Muy fácil» 6×8 a «Imposible» 40×58), modos Libre, Niveles y Desafío del día, gotas, pistas, zoom y 3 temas. Los tableros siempre tienen solución.
 - **Botellas**: adivina el orden secreto de 6 botellas (8 colores, 10 intentos, pistas de color y lugar).
 - **Futbolizado** (Opciones): «Poco futbolizado» o «Futbolizado de primera»; solo cambia el diseño, no los textos. También se puede editar el texto de la pantalla de inicio.
+El botón muestra por 3 segundos al jugador con una frase (ERES FUTBOLIZADO, o una al azar al volver a «Poco futbolizado»).
 
 Extras: sonido y vibración (se apagan en Opciones), historial por jugador con ranking y exportación a Excel.
 

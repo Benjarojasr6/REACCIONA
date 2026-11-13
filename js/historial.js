@@ -179,7 +179,7 @@
       if (b.dataset.a === "volver") R.salir();
       else if (b.dataset.a === "pie-def") { delete R.ajustes.pie; R.guardarAjustes(); aviso = "Texto restablecido."; pintar(); }
       else if (b.dataset.fut) {
-        R.ajustes.futbol = b.dataset.fut; R.guardarAjustes(); R.aplicarFutbol();
+        R.ajustes.futbol = b.dataset.fut; R.guardarAjustes(); R.aplicarFutbol(); R.avisoFutbol(b.dataset.fut === "primera");
         R.fb && R.fb.ok(); aviso = ""; pintar();
       } else if (b.dataset.sw) {
         R.ajustes[b.dataset.sw] = !R.ajustes[b.dataset.sw];
