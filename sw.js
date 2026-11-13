@@ -1,6 +1,6 @@
 /* Service worker de Reacciona: deja la app disponible sin internet.
    Cambia VERSION cada vez que subas cambios, para que los dispositivos se actualicen. */
-var VERSION = "reacciona-v13";
+var VERSION = "reacciona-v14";
 var ARCHIVOS = [
   "./", "index.html", "manifest.webmanifest",
   "css/app.css", "css/juegos.css",
@@ -14,7 +14,7 @@ var ARCHIVOS = [
 ];
 
 self.addEventListener("install", function (e) {
-  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(ARCHIVOS); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(VERSION).then(function (c) { return Promise.all(ARCHIVOS.map(function (u) { return fetch(new Request(u, { cache: "reload" })).then(function (r) { if (!r.ok) throw new Error(u); return c.put(u, r); }); })); }).then(function () { return self.skipWaiting(); }));
 });
 
 self.addEventListener("message", function (e) {
@@ -42,7 +42,7 @@ self.addEventListener("fetch", function (e) {
   e.respondWith(
     caches.open(VERSION).then(function (cache) {
       return cache.match(req, { ignoreSearch: propio }).then(function (guardado) {
-        var red = fetch(req).then(function (resp) {
+        var red = fetch(propio ? new Request(req, { cache: "reload" }) : req).then(function (resp) {
           if (resp && (resp.ok || resp.type === "opaque")) cache.put(req, resp.clone());
           return resp;
         }).catch(function () { return guardado; });
