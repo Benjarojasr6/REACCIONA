@@ -249,7 +249,7 @@ html[data-fut="primera"] .lz-config .lz-pie, html[data-fut="primera"] .lz.op .lz
 .aviso-fut { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: rgba(0,0,0,.35); animation: af-fondo .2s ease; }
 .aviso-fut.sale { opacity: 0; transition: opacity .25s; }
 .af-in { display: grid; justify-items: center; gap: 0; animation: af-pop .45s cubic-bezier(.2,1.4,.4,1); }
-.af-in img { height: min(62vh, 520px); width: auto; max-width: 90vw; object-fit: contain; filter: drop-shadow(0 6px 14px rgba(0,0,0,.45)); }
-.af-in p { margin: -22px 0 0; padding: 6px 16px; max-width: 92vw; background: #fff; color: #000; font-family: var(--f-disp); font-weight: 800; font-size: clamp(1.6rem, 8vw, 2.4rem); line-height: 1.1; letter-spacing: .01em; text-align: center; border-radius: 12px; text-transform: uppercase; }
+.af-in img { height: min(36vh, 300px); width: auto; max-width: 70vw; object-fit: contain; filter: drop-shadow(0 6px 14px rgba(0,0,0,.45)); }
+.af-in p { position: relative; z-index: 1; margin: 10px 0 0; padding: 8px 18px; overflow: visible; max-width: 92vw; background: #fff; color: #000; font-family: var(--f-disp); font-weight: 800; font-size: clamp(1.6rem, 8vw, 2.4rem); line-height: 1.25; letter-spacing: .01em; text-align: center; border-radius: 12px; text-transform: uppercase; }
 @keyframes af-pop { from { transform: scale(.5) rotate(-6deg); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes af-fondo { from { opacity: 0; } to { opacity: 1; } }

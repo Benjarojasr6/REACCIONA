@@ -10,7 +10,7 @@
     var a = document.querySelector("#splash .alerta");
     if (a && typeof R.ajustes.pie === "string" && R.ajustes.pie.trim()) a.textContent = R.ajustes.pie;
   });
-  var FRASES = ["AMATEUR", "NO ERES FUTBOLIZADO", "ANALFABETO", "PACOS FRUSTRADOS", "INOPERANTES", "PAPERS PENDIENTES"], ultima = -1, tmr = null;
+  var FRASES = ["AMATEUR", "NO ERES FUTBOLIZADO", "ANALFABETO", "PACOS FRUSTRADOS", "INOPERANTES"], ultima = -1, tmr = null;
   /* Aviso de 3 segundos con el jugador (sin fondo) y una frase. */
   R.avisoFutbol = function (primera) {
     var frase = "ERES FUTBOLIZADO";
