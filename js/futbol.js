@@ -11,7 +11,7 @@
     if (a && typeof R.ajustes.pie === "string" && R.ajustes.pie.trim()) a.textContent = R.ajustes.pie;
   });
   var FRASES = ["AMATEUR", "NO ERES FUTBOLIZADO", "ANALFABETO", "PACOS FRUSTRADOS", "INOPERANTES"], ultima = -1, tmr = null;
-  /* Aviso de 3 segundos con el jugador (sin fondo) y una frase. */
+  /* Aviso de 1,5 segundos con el jugador (sin fondo) y una frase. */
   R.avisoFutbol = function (primera) {
     var frase = "ERES FUTBOLIZADO";
     if (!primera) {
@@ -27,6 +27,6 @@
     document.body.appendChild(d);
     function cerrar() { clearTimeout(tmr); d.classList.add("sale"); setTimeout(function () { d.remove(); }, 250); }
     d.addEventListener("click", cerrar);
-    tmr = setTimeout(cerrar, 3000);
+    tmr = setTimeout(cerrar, 1500);
   };
 })(window.Reacciona);

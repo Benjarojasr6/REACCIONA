@@ -11,7 +11,8 @@
     { n: "Muy difícil", c: 20, f: 28, min: 2, max: 16, rec: 0.5, libre: 0.2, desc: "Hay que hacer zoom" },
     { n: "Extremo", c: 26, f: 36, min: 2, max: 22, rec: 0.45, libre: 0.12, desc: "Laberinto enorme" },
     { n: "Mega difícil", c: 32, f: 46, min: 2, max: 28, rec: 0.4, libre: 0.08, desc: "Solo para valientes" },
-    { n: "Imposible", c: 40, f: 58, min: 2, max: 36, rec: 0.35, libre: 0.05, desc: "Paciencia infinita" }
+    { n: "Imposible", c: 40, f: 58, min: 2, max: 36, rec: 0.35, libre: 0.05, desc: "Paciencia infinita" },
+    { n: "A tu medida", c: 12, f: 16, min: 2, max: 12, rec: 0.5, libre: 0.3, desc: "Tú decides el tamaño" }
   ];
   var TEMAS = [
     { id: "crema", n: "Crema", bg: "#f3ead8", ink: "#3a2418", dot: "rgba(58,36,24,.2)", top: "#b3622d", panel: "#fffaf0", mute: "#8a6a55" },
@@ -20,7 +21,7 @@
   ];
   var COLS_MOV = ["#2fa36b", "#2f86d6", "#c9a227", "#d1572d", "#8a5fd0"];
   var DX = [1, 0, -1, 0], DY = [0, 1, 0, -1];
-  var DEF = { modo: "libre", tier: 2, nivel: 1, nivelSel: 1, vidas: 3, pistas: 3, tema: "crema" };
+  var DEF = { modo: "libre", tier: 2, nivel: 1, nivelSel: 1, vidas: 3, pistas: 3, tema: "crema", cc: 12, cf: 16, largo: 12, recto: 50, libre: 30, limite: 0 };
 
   function mulberry32(a) {
     return function () {
@@ -229,7 +230,12 @@
         var t = tema();
         return "--fl-bg:" + t.bg + ";--fl-ink:" + t.ink + ";--fl-dot:" + t.dot + ";--fl-top:" + t.top + ";--fl-panel:" + t.panel + ";--fl-mute:" + t.mute;
       }
+      function sincronizar() {
+        var T = TIERS[8];
+        T.c = cfg.cc; T.f = cfg.cf; T.max = Math.max(2, cfg.largo); T.rec = cfg.recto / 100; T.libre = cfg.libre / 100;
+      }
       function plan() {
+        sincronizar();
         if (cfg.modo === "niveles") return { tier: tierDeNivel(cfg.nivelSel), seed: cfg.nivelSel * 7919 + 13, titulo: "Nivel " + cfg.nivelSel };
         if (cfg.modo === "diario") return { tier: 3, seed: hoySeed(), titulo: "Desafío del día" };
         return { tier: cfg.tier, seed: (Math.random() * 4294967295) >>> 0, titulo: "Libre" };
@@ -249,6 +255,11 @@
           cuerpo = "<h3>Dificultad</h3><div class=\"fl-tiers\">" + TIERS.map(function (t, i) {
             return '<button type="button" class="fl-tier' + (i === cfg.tier ? " sel" : "") + '" data-set="tier:' + i + '"><b>' + t.n + "</b><small>" + t.c + " × " + t.f + " · " + t.desc + "</small></button>";
           }).join("") + "</div>";
+          if (cfg.tier === 8) {
+            var sl = function (k, et, min, max, u) { return '<label class="campo"><span class="campo-et">' + et + ' <b data-v="' + k + '">' + cfg[k] + u + '</b></span><input type="range" data-k="' + k + '" data-u="' + u + '" min="' + min + '" max="' + max + '" step="1" value="' + cfg[k] + '"></label>'; };
+            cuerpo += '<h3>Tablero a tu medida</h3>' + sl("cc", "Columnas", 4, 45, "") + sl("cf", "Filas", 4, 65, "") + sl("largo", "Largo máximo de las flechas", 2, 40, "") + sl("recto", "Rectitud de las flechas", 10, 90, " %") + sl("libre", "Flechas libres al inicio", 0, 100, " %") +
+              '<p class="nota">Más flechas libres al inicio = más fácil. Los tableros enormes pueden tardar un poco en generarse.</p>';
+          }
         } else if (cfg.modo === "niveles") {
           var n = cfg.nivelSel, t = TIERS[tierDeNivel(n)];
           cuerpo = '<h3>Nivel</h3><div class="fl-nivel"><button type="button" class="btn" data-a="menos"' + (n <= 1 ? " disabled" : "") + '>−</button><div><b>Nivel ' + n + "</b><small>" + t.n + " · " + t.c + " × " + t.f + '</small></div><button type="button" class="btn" data-a="mas"' + (n >= cfg.nivel ? " disabled" : "") + ">+</button></div>" +
@@ -263,8 +274,9 @@
               '<p class="nota">Toca una flecha para sacarla del tablero. Solo sale si el camino hacia donde apunta está libre; si choca, pierdes una gota. Los tableros grandes se mueven con el dedo y se agrandan con dos dedos.</p>' +
               "<h3>Modo</h3>" + chips("", "modo", modos, cfg.modo) + '<p class="nota">' + desc[cfg.modo] + "</p>" + cuerpo +
               "<h3>Reglas</h3>" +
-              chips("Gotas (vidas)", "vidas", [[1, "1"], [3, "3"], [5, "5"], [0, "Sin límite"]], cfg.vidas) +
-              chips("Pistas", "pistas", [[0, "Ninguna"], [3, "3"], [-1, "Ilimitadas"]], cfg.pistas) +
+              chips("Gotas (vidas)", "vidas", [[1, "1"], [3, "3"], [5, "5"], [10, "10"], [0, "Sin límite"]], cfg.vidas) +
+              chips("Pistas", "pistas", [[0, "Ninguna"], [3, "3"], [10, "10"], [-1, "Ilimitadas"]], cfg.pistas) +
+              chips("Tiempo límite", "limite", [[0, "Sin límite"], [1, "1 min"], [3, "3 min"], [5, "5 min"], [10, "10 min"]], cfg.limite) +
               chips("Tema", "tema", TEMAS.map(function (t) { return [t.id, t.n]; }), cfg.tema) +
               '<p class="record"></p>' +
             "</div></div>" +
@@ -274,6 +286,15 @@
         raiz.querySelector(".lz-scroll").scrollTop = prev;
         var p0 = plan(), r = R.leer(claveRecord(p0.tier), null);
         raiz.querySelector(".record").textContent = r ? "Mejor tiempo: " + mmss(r.t) + " · Mejor puntaje: " + r.p : "Aún sin récord en este modo.";
+        R.pintarRangos(raiz);
+        raiz.addEventListener("input", function (e) {
+          var k = e.target.dataset && e.target.dataset.k;
+          if (!k) return;
+          cfg[k] = +e.target.value; guardarCfg();
+          raiz.querySelector('[data-v="' + k + '"]').textContent = cfg[k] + (e.target.dataset.u || "");
+          sincronizar();
+          var sm = raiz.querySelector(".fl-tier.sel small"); if (sm) sm.textContent = TIERS[8].c + " × " + TIERS[8].f + " · " + TIERS[8].desc;
+        });
         raiz.addEventListener("click", function (e) {
           var b = e.target.closest("button");
           if (!b) return;
@@ -285,6 +306,7 @@
           else if (d.set) {
             var p = d.set.indexOf(":"), k = d.set.slice(0, p), v = d.set.slice(p + 1);
             cfg[k] = (k === "modo" || k === "tema") ? v : Number(v);
+            sincronizar();
             guardarCfg(); pantallaConfig();
           }
         });
@@ -530,7 +552,14 @@
           btnPista.classList.toggle("vacio", pistasMax > 0 && S.pistas <= 0);
         }
         function tiempo() { var p = S.pausado + (S.pausaIni ? performance.now() - S.pausaIni : 0); return (performance.now() - S.t0 - p) / 1000; }
-        var tic = setInterval(function () { if (S.jugando) crono.textContent = mmss(tiempo()); }, 250);
+        var limiteSeg = cfg.limite > 0 ? cfg.limite * 60 : 0;
+        var tic = setInterval(function () {
+          if (!S.jugando) return;
+          var t = tiempo();
+          crono.textContent = limiteSeg ? mmss(Math.max(0, limiteSeg - t)) : mmss(t);
+          if (limiteSeg && t >= limiteSeg && S.anim === 0) sinVidas(true);
+        }, 250);
+        if (limiteSeg) crono.textContent = mmss(limiteSeg);
         pintarHud();
 
         function pausar() { if (!S.pausaIni) S.pausaIni = performance.now(); }
@@ -546,10 +575,10 @@
         function fila(k, t) {
           return '<div class="fl-fila"><span>' + t + '</span><button type="button" class="interruptor" role="switch" data-sw="' + k + '" aria-checked="' + (R.ajustes[k] ? "true" : "false") + '"' + (k === "vibracion" && !R.puedeVibrar ? " disabled" : "") + "><i></i></button></div>";
         }
-        function sinVidas() {
+        function sinVidas(tiempoAgotado) {
           if (!S.jugando) return;
           S.jugando = false; pausar(); R.fb.fin();
-          ov.innerHTML = '<div class="fl-card"><h3>Sin gotas</h3><p>Se acabaron las gotas. Quedaban ' + S.vivos + " flechas.</p>" +
+          ov.innerHTML = '<div class="fl-card"><h3>' + (tiempoAgotado === true ? "Se acabó el tiempo" : "Sin gotas") + "</h3><p>" + (tiempoAgotado === true ? "Se acabó el tiempo." : "Se acabaron las gotas.") + " Quedaban " + S.vivos + " flechas.</p>" +
             '<button type="button" class="fl-btn" data-a="reiniciar">Reintentar</button>' +
             (cfg.modo === "libre" ? '<button type="button" class="fl-btn suave" data-a="nuevo">Tablero nuevo</button>' : "") +
             '<button type="button" class="fl-btn suave" data-a="salir">Salir</button></div>';

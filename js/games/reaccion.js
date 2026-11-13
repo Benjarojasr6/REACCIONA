@@ -11,7 +11,7 @@
     },
 
     iniciar: function (cont) {
-      var cfg = Object.assign({ intentos: 5 }, R.leer("reaccion.cfg", {}));
+      var cfg = Object.assign({ intentos: 5, emin: 2, emax: 6 }, R.leer("reaccion.cfg", {}));
       var limpiar = null;
 
       function claveRecord() { return "reaccion.rec." + cfg.intentos; }
@@ -24,9 +24,13 @@
           '<section class="lz lz-config">' +
             '<header class="lz-top"><button class="volver" type="button" data-a="volver" aria-label="Volver al menú">←</button><h2>Reacción simple</h2></header>' +
             '<div class="lz-scroll"><div class="lz-col">' +
-              '<p class="nota">La pantalla queda en espera y, pasado un tiempo al azar de 2 a 6 segundos, un círculo se enciende en azul. Tócalo lo más rápido que puedas. Si tocas antes de que se encienda, cuenta como salida en falso.</p>' +
+              '<p class="nota">La pantalla queda en espera y, pasado un tiempo al azar de <b data-v="rango">' + cfg.emin + " a " + cfg.emax + '</b> segundos, un círculo se enciende en azul. Tócalo lo más rápido que puedas. Si tocas antes de que se encienda, cuenta como salida en falso.</p>' +
               '<label class="campo"><span class="campo-et">Intentos <b data-v="intentos" data-u="">' + cfg.intentos + '</b></span>' +
-              '<input type="range" data-k="intentos" min="3" max="10" step="1" value="' + cfg.intentos + '"></label>' +
+              '<input type="range" data-k="intentos" min="3" max="20" step="1" value="' + cfg.intentos + '"></label>' +
+              '<label class="campo"><span class="campo-et">Espera mínima <b data-v="emin" data-u=" s">' + cfg.emin + " s" + '</b></span>' +
+              '<input type="range" data-k="emin" min="1" max="10" step="1" value="' + cfg.emin + '"></label>' +
+              '<label class="campo"><span class="campo-et">Espera máxima <b data-v="emax" data-u=" s">' + cfg.emax + " s" + '</b></span>' +
+              '<input type="range" data-k="emax" min="2" max="15" step="1" value="' + cfg.emax + '"></label>' +
               '<p class="record">' + (rec === null ? "Aún sin récord con estos intentos." : "Mejor promedio: " + rec + " ms") + "</p>" +
             "</div></div>" +
             '<footer class="lz-pie"><div class="lz-col"><button class="btn primario grande" type="button" data-a="jugar">Comenzar</button></div></footer>' +
@@ -40,9 +44,15 @@
           else if (b.dataset.a === "jugar") R.pedirJugador(cont, function (nombre) { jugar(nombre); }, pantallaConfig);
         });
         raiz.addEventListener("input", function (e) {
-          if (!e.target.dataset || e.target.dataset.k !== "intentos") return;
-          cfg.intentos = +e.target.value;
-          raiz.querySelector('[data-v="intentos"]').textContent = cfg.intentos;
+          var k = e.target.dataset && e.target.dataset.k;
+          if (k !== "intentos" && k !== "emin" && k !== "emax") return;
+          cfg[k] = +e.target.value;
+          if (cfg.emax <= cfg.emin) { if (k === "emin") cfg.emax = cfg.emin + 1; else cfg.emin = cfg.emax - 1; }
+          ["intentos", "emin", "emax"].forEach(function (c) {
+            raiz.querySelector('[data-v="' + c + '"]').textContent = cfg[c] + (c === "intentos" ? "" : " s");
+            var inp = raiz.querySelector('[data-k="' + c + '"]'); inp.value = cfg[c]; R.pintarRango(inp);
+          });
+          raiz.querySelector('[data-v="rango"]').textContent = cfg.emin + " a " + cfg.emax;
           R.guardar("reaccion.cfg", cfg);
           var r = R.leer(claveRecord(), null);
           raiz.querySelector(".record").textContent = r === null ? "Aún sin récord con estos intentos." : "Mejor promedio: " + r + " ms";
@@ -69,7 +79,7 @@
           if (!vivo) return;
           fase = "espera"; circ.classList.remove("on"); msg.textContent = "Espera…";
           hI.textContent = Math.min(cfg.intentos, tiempos.length + 1);
-          after(encender, 2000 + Math.random() * 4000);
+          after(encender, cfg.emin * 1000 + Math.random() * (cfg.emax - cfg.emin) * 1000);
         }
         function encender() {
           fase = "ya"; circ.classList.add("on"); msg.textContent = "¡Toca!";
