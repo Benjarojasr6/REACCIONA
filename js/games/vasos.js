@@ -9,7 +9,7 @@
   var NIVELES = [[3, "Nivel 1 · 3 vasos"], [9, "Nivel 2 · 9 vasos"], [12, "Nivel 3 · 12 vasos"]];
   var VELS = [[700, "Lenta"], [450, "Normal"], [280, "Rápida"]];
   var LIMS = [[5, "5 s"], [8, "8 s"], [12, "12 s"], [0, "Sin límite"]];
-  var DEF = { modo: "nivel", vasos: 3, rondas: 5, mezclas: 8, vel: 450, lim: 8, vidas: 3 };
+  var DEF = { modo: "nivel", vasos: 3, rondas: 5, mezclas: 8, vel: 450, lim: 8, vidas: 3, dividida: 0, arranque: 0 };
 
   function pent(cx, cy, r, rot) {
     var p = [];
@@ -34,8 +34,10 @@
   })();
   var nBola = 0;
   function bola() { var id = ++nBola; return BOLA_SRC.replace(/vsb/g, "vsb" + id).replace(/vsg/g, "vsg" + id); }
-  var VASO = '<svg viewBox="0 0 100 116" preserveAspectRatio="none" aria-hidden="true"><path d="M13 4 H87 L100 112 H0 Z" fill="#c4222e"/>' +
-    '<path d="M13 4 H87 L89 20 H11 Z" fill="#e5505b" opacity=".75"/><path d="M0 112 L2 98 H98 L100 112 Z" fill="#8f1620"/></svg>';
+  var VASO = '<svg viewBox="0 0 100 120" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="vsc" x1="0" x2="1"><stop offset="0" style="stop-color:var(--cup-d)"/><stop offset=".3" style="stop-color:var(--cup)"/><stop offset=".6" style="stop-color:var(--cup-l)"/><stop offset="1" style="stop-color:var(--cup-d)"/></linearGradient></defs>' +
+    '<path d="M18 16 L5 106 A45 13 0 0 0 95 106 L82 16 Z" fill="url(#vsc)"/>' +
+    '<ellipse cx="50" cy="16" rx="32" ry="10" style="fill:var(--cup-l)"/><ellipse cx="50" cy="16" rx="32" ry="10" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.4"/>' +
+    '<path d="M24 36 L16 100" stroke="rgba(255,255,255,.28)" stroke-width="5" stroke-linecap="round" fill="none"/></svg>';
 
   function corazones(rest, total) {
     var s = "";
@@ -69,8 +71,8 @@
 
       function guardarCfg() { R.guardar("vasos.cfg", cfg); }
       function etiqueta() {
-        var l = cfg.lim ? cfg.lim + " s para responder" : "sin límite";
-        if (cfg.modo === "racha") return cfg.vidas + (cfg.vidas === 1 ? " vida" : " vidas") + " · " + l;
+        var l = (cfg.dividida ? "pantalla dividida · " : "") + (cfg.lim ? cfg.lim + " s para responder" : "sin límite");
+        if (cfg.modo === "racha") return cfg.vidas + (cfg.vidas === 1 ? " vida" : " vidas") + (cfg.arranque ? " · arranque " + (cfg.arranque > 4 ? "experto" : "difícil") : "") + " · " + l;
         return cfg.vasos + " vasos · " + cfg.rondas + " rondas · " + cfg.mezclas + " mezclas · " + cfg.vel + " ms · " + l;
       }
       function claveRecord() { return "vasos.rec." + cfg.modo + "|" + etiqueta(); }
@@ -91,8 +93,10 @@
             campo("mezclas", "Mezclas por ronda", 3, 20, 1, cfg.mezclas, "") +
             chips("Velocidad de los vasos", "vel", VELS, cfg.vel);
         } else {
-          params = chips("Vidas", "vidas", [[1, "1 vida"], [3, "3 vidas"]], cfg.vidas);
+          params = chips("Vidas", "vidas", [[1, "1 vida"], [3, "3 vidas"]], cfg.vidas) +
+            chips("Dificultad al empezar", "arranque", [[0, "Normal"], [4, "Difícil"], [8, "Experto"]], cfg.arranque);
         }
+        params += chips("Pantalla", "dividida", [[0, "Una sola"], [1, "Dividida (2 pelotas)"]], cfg.dividida);
         params += chips("Tiempo para responder", "lim", LIMS, cfg.lim);
         var chipsModo = MODOS.map(function (m) {
           return '<button type="button" class="chip' + (m.id === cfg.modo ? " sel" : "") + '" data-modo="' + m.id + '">' + m.nombre + "</button>";
@@ -125,6 +129,8 @@
           else if (d.vasos) { cfg.vasos = +d.vasos; guardarCfg(); pantallaConfig(); }
           else if (d.vel) { cfg.vel = +d.vel; guardarCfg(); pantallaConfig(); }
           else if (d.lim !== undefined) { cfg.lim = +d.lim; guardarCfg(); pantallaConfig(); }
+          else if (d.dividida !== undefined) { cfg.dividida = +d.dividida; guardarCfg(); pantallaConfig(); }
+          else if (d.arranque !== undefined) { cfg.arranque = +d.arranque; guardarCfg(); pantallaConfig(); }
           else if (d.vidas) { cfg.vidas = +d.vidas; guardarCfg(); pantallaConfig(); }
         });
         raiz.addEventListener("input", function (e) {
@@ -140,7 +146,7 @@
 
       /* ---------- partida ---------- */
       function jugar(jugador) {
-        var racha = cfg.modo === "racha";
+        var racha = cfg.modo === "racha", dividida = !!cfg.dividida, NC = dividida ? 2 : 1;
         cont.innerHTML =
           '<section class="lz lz-juego vs">' +
             '<div class="lz-hud">' +
@@ -150,18 +156,24 @@
             "</div>" +
             '<div class="lz-barra"><i></i></div>' +
             '<div class="lz-msg fijo" aria-live="polite"></div>' +
-            '<div class="vs-area"><div class="vs-campo"></div></div>' +
+            '<div class="vs-area' + (dividida ? " dividida" : "") + '"></div>' +
             '<div class="lz-cuenta" aria-live="assertive"></div>' +
           "</section>";
         var raiz = cont.querySelector(".vs");
-        var campoEl = raiz.querySelector(".vs-campo");
+        var area = raiz.querySelector(".vs-area");
         var cuenta = raiz.querySelector(".lz-cuenta"), msg = raiz.querySelector(".lz-msg");
         var hR = raiz.querySelector('[data-h="r"]'), hP = raiz.querySelector('[data-h="p"]');
         var barra = raiz.querySelector(".lz-barra i");
         var S = {
           jugando: false, fase: "cuenta", timers: [], raf: 0, ronda: 0, aciertos: 0, fallos: 0,
-          vidas: cfg.vidas, copas: [], objetivo: null, N: 3, g: null, rts: [], tResp: 0
+          vidas: cfg.vidas, campos: [], N: 3, rts: [], tResp: 0
         };
+        for (var ci = 0; ci < NC; ci++) {
+          var ce = document.createElement("div");
+          ce.className = "vs-campo c" + ci;
+          area.appendChild(ce);
+          S.campos.push({ el: ce, copas: [], objetivo: null, sel: null, g: null });
+        }
 
         function after(fn, ms) { var id = setTimeout(fn, ms); S.timers.push(id); return id; }
         function pintarHud() {
@@ -172,85 +184,95 @@
         /* dificultad de la ronda */
         function params() {
           if (!racha) return { N: cfg.vasos, mezclas: cfg.mezclas, ms: cfg.vel };
-          var r = S.ronda - 1;
+          var r = S.ronda - 1 + (cfg.arranque || 0);
           return {
-            N: r < 3 ? 3 : r < 6 ? 6 : r < 9 ? 9 : 12,
-            mezclas: Math.min(18, 4 + r),
-            ms: Math.max(220, 620 - 30 * r)
+            N: r < 2 ? 3 : r < 4 ? 5 : r < 6 ? 6 : r < 8 ? 8 : r < 10 ? 9 : 12,
+            mezclas: Math.min(28, 8 + 2 * r),
+            ms: Math.max(150, 430 - 28 * r)
           };
         }
 
-        /* geometría: posición de cada hueco */
-        function geometria() {
-          var W = campoEl.clientWidth, H = campoEl.clientHeight, N = S.N;
+        /* geometría: posición de cada hueco (por campo) */
+        function geometria(C) {
+          var W = C.el.clientWidth, H = C.el.clientHeight, N = S.N;
           var cols = N <= 6 ? 3 : (N === 9 ? 3 : 4), filas = Math.ceil(N / cols);
           var cw = W / cols, ch = H / filas;
-          var ancho = Math.max(34, Math.min(cw * 0.66, (ch * 0.62) / 1.15, 150));
-          S.g = { W: W, H: H, cols: cols, filas: filas, cw: cw, ch: ch, ancho: ancho, alto: ancho * 1.15 };
+          var ancho = Math.max(30, Math.min(cw * 0.7, (ch * 0.7) / 1.1, 150));
+          C.g = { W: W, H: H, cols: cols, filas: filas, cw: cw, ch: ch, ancho: ancho, alto: ancho * 1.1 };
         }
-        function pos(slot) {
-          var g = S.g, c = slot % g.cols, f = Math.floor(slot / g.cols);
-          return { x: (c + 0.5) * g.cw - g.ancho / 2, y: (f + 0.5) * g.ch - g.alto / 2 };
+        function pos(C, slot) {
+          var g = C.g, c = slot % g.cols, f = Math.floor(slot / g.cols);
+          return { x: (c + 0.5) * g.cw - g.ancho / 2, y: (f + 0.5) * g.ch - g.alto / 2 + g.alto * 0.08 };
         }
-        function colocar(c) {
-          var p = pos(c.slot);
+        function colocar(C, c) {
+          var p = pos(C, c.slot);
           c.el.style.transform = "translate3d(" + p.x.toFixed(1) + "px," + p.y.toFixed(1) + "px,0)";
         }
         function dimensionar() {
-          var g = S.g;
-          S.copas.forEach(function (c) {
-            c.el.style.width = g.ancho + "px"; c.el.style.height = g.alto + "px";
-            c.el.style.fontSize = Math.round(g.ancho * 0.42) + "px";
-            var b = c.el.querySelector(".vs-bola");
-            b.style.width = b.style.height = Math.round(g.ancho * 0.56) + "px";
-            colocar(c);
+          S.campos.forEach(function (C) {
+            var g = C.g; if (!g) return;
+            C.copas.forEach(function (c) {
+              c.el.style.width = g.ancho + "px"; c.el.style.height = g.alto + "px";
+              c.el.style.fontSize = Math.round(g.ancho * 0.4) + "px";
+              var b = c.el.querySelector(".vs-bola");
+              b.style.width = b.style.height = Math.round(g.ancho * 0.5) + "px";
+              colocar(C, c);
+            });
           });
         }
         function alCambiarTamano() {
-          if (!S.copas.length) return;
-          var d = campoEl.style.transition;
-          geometria(); dimensionar();
+          if (!S.campos[0].copas.length) return;
+          S.campos.forEach(geometria); dimensionar();
         }
         window.addEventListener("resize", alCambiarTamano);
         var ro = null;
-        if (window.ResizeObserver) { ro = new ResizeObserver(alCambiarTamano); ro.observe(campoEl); }
+        if (window.ResizeObserver) { ro = new ResizeObserver(alCambiarTamano); ro.observe(area); }
 
         function construir(p) {
-          campoEl.innerHTML = ""; S.copas = []; S.N = p.N;
-          geometria();
-          for (var i = 0; i < p.N; i++) {
-            var el = document.createElement("div");
-            el.className = "vs-c";
-            el.style.transitionDuration = p.ms + "ms";
-            el.innerHTML = '<div class="vs-bola">' + bola() + '</div><div class="vs-vaso">' + VASO + '<span class="vs-n"></span></div>';
-            var c = { el: el, slot: i };
-            el.__c = c;
-            campoEl.appendChild(el);
-            S.copas.push(c);
-          }
-          S.objetivo = S.copas[Math.floor(Math.random() * p.N)];
-          S.objetivo.el.classList.add("con-bola");
+          S.N = p.N;
+          S.campos.forEach(function (C) {
+            C.el.innerHTML = ""; C.copas = []; C.sel = null; C.el.classList.remove("numerado", "listo");
+            geometria(C);
+            for (var i = 0; i < p.N; i++) {
+              var el = document.createElement("div");
+              el.className = "vs-c";
+              el.style.transitionDuration = p.ms + "ms";
+              el.innerHTML = '<div class="vs-sombra"></div><div class="vs-bola">' + bola() + '</div><div class="vs-vaso">' + VASO + '<span class="vs-n"></span></div>';
+              var c = { el: el, slot: i };
+              el.__c = c; el.__C = C;
+              C.el.appendChild(el);
+              C.copas.push(c);
+            }
+            C.objetivo = C.copas[Math.floor(Math.random() * p.N)];
+            C.objetivo.el.classList.add("con-bola");
+          });
           dimensionar();
         }
 
+        function mezclarCampo(C, ms) {
+          var N = S.N, maxPares = Math.max(1, Math.floor(N / 4)), slots = [], k;
+          for (k = 0; k < N; k++) slots.push(k);
+          for (k = N - 1; k > 0; k--) { var j = Math.floor(Math.random() * (k + 1)); var t = slots[k]; slots[k] = slots[j]; slots[j] = t; }
+          var pares = 1 + Math.floor(Math.random() * maxPares);
+          for (k = 0; k < pares; k++) {
+            var a = slots[2 * k], b = slots[2 * k + 1];
+            var ca = C.copas.filter(function (c) { return c.slot === a; })[0];
+            var cb = C.copas.filter(function (c) { return c.slot === b; })[0];
+            ca.slot = b; cb.slot = a;
+            ca.el.style.zIndex = 3; cb.el.style.zIndex = 2;
+            ca.el.classList.add("mov"); cb.el.classList.add("mov");
+            colocar(C, ca); colocar(C, cb);
+          }
+        }
         function mezclar(pasos, ms, fin) {
-          var N = S.N, maxPares = Math.max(1, Math.floor(N / 4));
           function paso(i) {
             if (!S.jugando) return;
             if (i >= pasos) { after(fin, 150); return; }
-            var slots = [], k;
-            for (k = 0; k < N; k++) slots.push(k);
-            for (k = N - 1; k > 0; k--) { var j = Math.floor(Math.random() * (k + 1)); var t = slots[k]; slots[k] = slots[j]; slots[j] = t; }
-            var pares = 1 + Math.floor(Math.random() * maxPares);
-            for (k = 0; k < pares; k++) {
-              var a = slots[2 * k], b = slots[2 * k + 1];
-              var ca = S.copas.filter(function (c) { return c.slot === a; })[0];
-              var cb = S.copas.filter(function (c) { return c.slot === b; })[0];
-              ca.slot = b; cb.slot = a;
-              ca.el.style.zIndex = 3; cb.el.style.zIndex = 2;
-              colocar(ca); colocar(cb);
-            }
-            after(function () { S.copas.forEach(function (c) { c.el.style.zIndex = ""; }); paso(i + 1); }, ms + 70);
+            S.campos.forEach(function (C) { mezclarCampo(C, ms); });
+            after(function () {
+              S.campos.forEach(function (C) { C.copas.forEach(function (c) { c.el.style.zIndex = ""; c.el.classList.remove("mov"); }); });
+              paso(i + 1);
+            }, ms + 70);
           }
           paso(0);
         }
@@ -262,63 +284,75 @@
           S.fase = "ver";
           barra.style.transition = "none"; barra.style.transform = "scaleX(0)";
           construir(p);
-          msg.textContent = "Mira dónde queda la pelota";
-          after(function () { S.objetivo.el.classList.add("alz"); }, 700);
-          after(function () { S.objetivo.el.classList.remove("alz"); }, 2100);
+          msg.textContent = dividida ? "Sigue las dos pelotas a la vez" : "Mira dónde queda la pelota";
+          after(function () { S.campos.forEach(function (C) { C.objetivo.el.classList.add("alz"); }); }, 700);
+          after(function () { S.campos.forEach(function (C) { C.objetivo.el.classList.remove("alz"); }); }, 2100);
           after(function () {
             msg.textContent = "Mezclando…";
             mezclar(p.mezclas, p.ms, responder);
           }, 2700);
         }
 
+        var NOMBRES = ["Arriba", "Abajo"];
         function responder() {
           if (!S.jugando) return;
           S.fase = "resp";
-          S.copas.forEach(function (c) { c.el.querySelector(".vs-n").textContent = c.slot + 1; });
-          campoEl.classList.add("numerado");
-          msg.textContent = "¿Dónde está?";
+          S.campos.forEach(function (C) {
+            C.copas.forEach(function (c) { c.el.querySelector(".vs-n").textContent = c.slot + 1; });
+            C.el.classList.add("numerado");
+          });
+          msg.textContent = dividida ? "¿Dónde están? Una arriba y otra abajo" : "¿Dónde está?";
           S.tResp = performance.now();
           if (cfg.lim) {
             var ini = S.tResp;
             (function tic() {
               if (!S.jugando || S.fase !== "resp") return;
               var r = 1 - (performance.now() - ini) / (cfg.lim * 1000);
-              if (r <= 0) { barra.style.transform = "scaleX(0)"; resolver(null); return; }
+              if (r <= 0) { barra.style.transform = "scaleX(0)"; resolver(); return; }
               barra.style.transform = "scaleX(" + r.toFixed(3) + ")";
               S.raf = requestAnimationFrame(tic);
             })();
           }
         }
 
-        function resolver(copa) {
+        function elegir(C, c) {
+          if (C.sel) return;
+          C.sel = c; c.el.classList.add("elegido"); C.el.classList.add("listo");
+          R.tono && R.tono(520, 40, "sine", 0.1);
+          if (S.campos.every(function (x) { return x.sel; })) { S.rts.push(performance.now() - S.tResp); resolver(); }
+        }
+
+        function resolver() {
           if (S.fase !== "resp") return;
           S.fase = "rev";
           cancelAnimationFrame(S.raf);
-          campoEl.classList.remove("numerado");
-          var ok = copa === S.objetivo;
-          if (copa) S.rts.push(performance.now() - S.tResp);
+          var ok = S.campos.every(function (C) { return C.sel === C.objetivo; });
+          S.campos.forEach(function (C) { C.el.classList.remove("numerado"); });
           if (ok) { S.aciertos++; R.fb.ok(); }
           else { S.fallos++; R.fb.mal(); if (racha) { S.vidas--; R.fb.vida(); } }
           pintarHud();
-          if (copa) copa.el.classList.add("alz", ok ? "ok" : "mal");
-          var slotReal = S.objetivo.slot + 1;
-          if (ok) msg.textContent = "¡Vaso " + slotReal + "! Correcto";
-          else {
-            msg.textContent = copa ? "No… estaba en el vaso " + slotReal : "Se acabó el tiempo · vaso " + slotReal;
-            after(function () { S.objetivo.el.classList.add("alz"); }, 500);
-          }
+          var partes = [], hayNulo = false;
+          S.campos.forEach(function (C, i) {
+            var bien = C.sel === C.objetivo, real = C.objetivo.slot + 1;
+            if (!C.sel) hayNulo = true;
+            partes.push((dividida ? NOMBRES[i] + " " : "Vaso ") + real);
+            if (C.sel) C.sel.el.classList.add("alz", bien ? "ok" : "mal");
+            if (!bien) after(function () { C.objetivo.el.classList.add("alz"); }, 500);
+            else if (C.sel) after(function () { C.el.classList.add("gana"); }, 300);
+          });
+          if (ok) msg.textContent = "¡Resuelto! " + (dividida ? partes.join(" · ") : "Vaso " + (S.campos[0].objetivo.slot + 1));
+          else msg.textContent = dividida ? (hayNulo ? "Tiempo · " : "Estaban: ") + partes.join(" · ") : (hayNulo ? "Se acabó el tiempo · " : "No… ") + "estaba en el " + partes[0].toLowerCase();
           raiz.classList.toggle("golpe", !ok);
           after(function () { raiz.classList.remove("golpe"); }, 300);
           var fin = racha ? S.vidas <= 0 : S.ronda >= cfg.rondas;
-          after(function () { if (fin) terminar(); else ronda(); }, ok ? 1500 : 2300);
+          after(function () { if (fin) terminar(); else ronda(); }, ok ? 1600 : 2400);
         }
-
-        campoEl.addEventListener("pointerdown", function (e) {
+        area.addEventListener("pointerdown", function (e) {
           if (!S.jugando || S.fase !== "resp") return;
           var el = e.target.closest(".vs-c");
           if (!el || !el.__c) return;
           e.preventDefault();
-          resolver(el.__c);
+          elegir(el.__C, el.__c);
         });
         raiz.addEventListener("click", function (e) {
           if (!e.target.closest("[data-a=parar]")) return;

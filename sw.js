@@ -1,6 +1,6 @@
 /* Service worker de Reacciona: deja la app disponible sin internet.
    Cambia VERSION cada vez que subas cambios, para que los dispositivos se actualicen. */
-var VERSION = "reacciona-v15";
+var VERSION = "reacciona-v20";
 var ARCHIVOS = [
   "./", "index.html", "manifest.webmanifest",
   "css/app.css", "css/juegos.css",
@@ -9,6 +9,11 @@ var ARCHIVOS = [
   "js/games/colores.js", "js/games/luces.js", "js/games/reaccion.js", "js/games/numeros.js", "js/games/vasos.js", "js/games/personalizado.js",
   "js/games/flechas.js",
   "js/games/botellas.js",
+  "js/games/gato.js",
+  "js/games/conecta4.js",
+  "js/games/corredor.js",
+  "camiseta.png",
+  "logos/wanderers.png", "logos/cobreloa.png", "logos/curico.png", "logos/antofagasta.png", "logos/copiapo.png", "logos/iquique.png", "logos/puertomontt.png", "logos/recoleta.png", "logos/santacruz.png", "logos/temuco.png", "logos/magallanes.png", "logos/rangers.png", "logos/sanluis.png", "logos/sanmarcos.png", "logos/uespanola.png", "logos/sanfelipe.png",
   "icon-192.png", "icon-512.png", "maskable-192.png", "maskable-512.png",
   "apple-touch-icon.png", "favicon-64.png"
 ];

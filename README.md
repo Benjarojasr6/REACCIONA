@@ -10,7 +10,10 @@ Pruebas incluidas:
 - **¿Dónde está la pelota?**: una pelota de fútbol queda bajo un vaso, los vasos se mezclan y hay que encontrarla (por niveles de 3, 9 o 12 vasos, o en racha con dificultad creciente).
 - **Personalizado**: entrenamiento a la medida en 4 pasos (estímulos, transición, duración y resumen) con colores propios, flechas, números, letras, formas, palabras, cálculos, voz, combinaciones (color + estímulo, palabra y color, pelota en movimiento, ver y escuchar), parada (no-go), series con descanso y favoritos.
 - **Flechas**: rompecabezas de flechas serpiente que hay que sacar del tablero sin que choquen. 8 dificultades (de «Muy fácil» 6×8 a «Imposible» 40×58), modos Libre, Niveles y Desafío del día, gotas, pistas, zoom y 3 temas. Los tableros siempre tienen solución.
-- **Botellas**: adivina el orden secreto de las botellas; configurable (botellas 3–8, colores 3–10, intentos 3–20, repetidos, tiempo límite y pistas).
+- **Botellas**: dos modos: adivinar el orden (Mastermind) e intercambiar botellas en una estantería; estilo neón; futbolizado con escudos de Primera B 2026 (con los logos de los 16 equipos en `logos/`).
+- **Gato**: tres en línea (3×3 a 8×8, línea de 3–5), vs IA (Fácil/Normal/Difícil/Imposible) o 2 personas, series, retirar y pistas.
+- **Conecta 4**: tablero y línea configurables, vs IA (4 niveles) o 2 personas, tiempo por turno, series, retirar y pistas.
+- **Corredor**: salta y barre esquivando obstáculos mientras recoges pelotas; velocidad creciente, 5 dificultades + personalizado, vidas y modo contrarreloj.
 - **Futbolizado** (Opciones): «Poco futbolizado» o «Futbolizado de primera»; solo cambia el diseño, no los textos. También se puede editar el texto de la pantalla de inicio.
 El botón muestra por 3 segundos al jugador con una frase (ERES FUTBOLIZADO, o una al azar al volver a «Poco futbolizado»).
 

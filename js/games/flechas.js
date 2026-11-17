@@ -21,7 +21,7 @@
   ];
   var COLS_MOV = ["#2fa36b", "#2f86d6", "#c9a227", "#d1572d", "#8a5fd0"];
   var DX = [1, 0, -1, 0], DY = [0, 1, 0, -1];
-  var DEF = { modo: "libre", tier: 2, nivel: 1, nivelSel: 1, vidas: 3, pistas: 3, tema: "crema", cc: 12, cf: 16, largo: 12, recto: 50, libre: 30, limite: 0 };
+  var DEF = { modo: "libre", tier: 2, nivel: 1, nivelSel: 1, vidas: 3, pistas: 3, tema: "crema", cc: 12, cf: 16, largo: 12, recto: 50, libre: 30, limite: 0, limSeg: 0 };
 
   function mulberry32(a) {
     return function () {
@@ -276,7 +276,8 @@
               "<h3>Reglas</h3>" +
               chips("Gotas (vidas)", "vidas", [[1, "1"], [3, "3"], [5, "5"], [10, "10"], [0, "Sin límite"]], cfg.vidas) +
               chips("Pistas", "pistas", [[0, "Ninguna"], [3, "3"], [10, "10"], [-1, "Ilimitadas"]], cfg.pistas) +
-              chips("Tiempo límite", "limite", [[0, "Sin límite"], [1, "1 min"], [3, "3 min"], [5, "5 min"], [10, "10 min"]], cfg.limite) +
+              chips("Tiempo de trabajo", "limSeg", [[0, "Sin límite"], [20, "20 s"], [30, "30 s"], [45, "45 s"], [60, "1 min"], [120, "2 min"], [180, "3 min"], [300, "5 min"], [600, "10 min"]], cfg.limSeg) +
+              '<label class="campo"><span class="campo-et">Tiempo exacto <b data-v="limSeg" data-u=" s">' + (cfg.limSeg ? cfg.limSeg + " s" : "sin límite") + '</b></span><input type="range" data-k="limSeg" data-u=" s" min="0" max="600" step="5" value="' + cfg.limSeg + '"></label>' +
               chips("Tema", "tema", TEMAS.map(function (t) { return [t.id, t.n]; }), cfg.tema) +
               '<p class="record"></p>' +
             "</div></div>" +
@@ -295,6 +296,7 @@
           sincronizar();
           var sm = raiz.querySelector(".fl-tier.sel small"); if (sm) sm.textContent = TIERS[8].c + " × " + TIERS[8].f + " · " + TIERS[8].desc;
         });
+        raiz.addEventListener("change", function (e) { if (e.target.dataset && e.target.dataset.k === "limSeg") pantallaConfig(); });
         raiz.addEventListener("click", function (e) {
           var b = e.target.closest("button");
           if (!b) return;
@@ -552,7 +554,7 @@
           btnPista.classList.toggle("vacio", pistasMax > 0 && S.pistas <= 0);
         }
         function tiempo() { var p = S.pausado + (S.pausaIni ? performance.now() - S.pausaIni : 0); return (performance.now() - S.t0 - p) / 1000; }
-        var limiteSeg = cfg.limite > 0 ? cfg.limite * 60 : 0;
+        var limiteSeg = cfg.limSeg > 0 ? cfg.limSeg : 0;
         var tic = setInterval(function () {
           if (!S.jugando) return;
           var t = tiempo();
